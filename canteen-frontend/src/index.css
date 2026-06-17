@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.food-img-fallback {
+    background: linear-gradient(135deg, #fed7aa, #fb923c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+}
