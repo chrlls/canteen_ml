@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Layout from '../common/Layout';
-import api from '../../services/api';
+import orderService from '../../services/orderService';
+import usePolling from '../../hooks/usePolling';
+import ORDER_STATUS from '../../constants/orderStatus';
 
-// ✅ Capitalized to match DB enum
-const SC = {
-  Pending:   { label: 'Pending',   color: '#f39c12', bg: 'rgba(243,156,18,0.1)'  },
-  Preparing: { label: 'Preparing', color: '#3498db', bg: 'rgba(52,152,219,0.1)'  },
-  Ready:     { label: 'Ready',     color: '#27ae60', bg: 'rgba(39,174,96,0.1)'   },
-  Completed: { label: 'Completed', color: '#3498db', bg: 'rgba(52,152,219,0.1)'  },
-  Cancelled: { label: 'Cancelled', color: '#bbb',    bg: 'rgba(187,187,187,0.1)' },
-};
 
 export default function OrderHistory() {
   const [orders, setOrders]     = useState([]);
@@ -19,18 +13,13 @@ export default function OrderHistory() {
   const [show, setShow]         = useState(false);
 
   const fetchOrders = useCallback(() => {
-    api.get('/orders')
+    orderService.getOrders()
       .then(r => setOrders(r.data))
-      .catch(console.log)
+      .catch(console.error)
       .finally(() => { setLoading(false); setTimeout(() => setShow(true), 60); });
   }, []);
 
-  useEffect(() => {
-    fetchOrders();
-    // ✅ Auto-refresh every 5s so status updates show in real-time
-    const interval = setInterval(fetchOrders, 5000);
-    return () => clearInterval(interval);
-  }, [fetchOrders]);
+  usePolling(fetchOrders, 5000);
 
   const TABS = ['all', 'Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'];
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
@@ -38,7 +27,6 @@ export default function OrderHistory() {
   return (
     <Layout>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
         .oh { font-family:'Poppins',sans-serif; }
 
         .oh-header { margin-bottom: 1.5rem; }
@@ -56,7 +44,7 @@ export default function OrderHistory() {
           width:6px;height:6px;border-radius:50%;background:#27ae60;
           animation:ohPulse 2s infinite;display:inline-block;
         }
-        @keyframes ohPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.2)} }
+        @keyframes ohPulse { 0%,100%{opacity:1;transform:scale(1)}
 
         .oh-tabs { display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.25rem; }
         .oh-tab {
@@ -85,7 +73,7 @@ export default function OrderHistory() {
           background:linear-gradient(90deg,#e74c3c,#ff8a80,#e74c3c);
           background-size:200% 100%;animation:ohShim 3s linear infinite;
         }
-        @keyframes ohShim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        @keyframes ohShim { 0%{background-position:200% 0}
         .oh-card.show { opacity:1;transform:translateY(0); }
         .oh-card:hover { box-shadow:0 6px 20px rgba(0,0,0,0.09); }
 
@@ -126,7 +114,6 @@ export default function OrderHistory() {
           background-size:200% 100%;animation:shimmer 1.4s infinite;
           border-radius:16px;height:68px;
         }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
       `}</style>
 
       <div className="oh">
@@ -171,7 +158,7 @@ export default function OrderHistory() {
               </div>
             ) : (
               filtered.map((order, idx) => {
-                const s = SC[order.status] || SC.Pending;
+                const s = ORDER_STATUS[order.status] || ORDER_STATUS.Pending;
                 const isOpen = expanded === order.id;
                 return (
                   <div

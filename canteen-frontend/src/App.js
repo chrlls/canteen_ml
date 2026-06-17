@@ -8,7 +8,7 @@ import ReportsPage from './components/dashboard/ReportsPage';
 import MenuList from './components/menu/MenuList';
 import POSInterface from './components/orders/POSInterface';
 import InventoryTable from './components/inventory/InventoryTable';
-import UserManagement from './components/Users/UserManagement';
+import UserManagement from './components/users/UserManagement';
 import OrderHistory from './components/orders/OrderHistory';
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
 
                 {/* Public Routes */}
                 <Route path="/" element={<Login />} />
-                <Route path="/login" element={<Login />} />  {/* ✅ ADD THIS LINE */}
+                <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
                 {/* Admin Only */}

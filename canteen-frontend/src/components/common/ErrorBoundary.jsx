@@ -15,7 +15,6 @@ class ErrorBoundary extends React.Component {
             return (
                 <>
                     <style>{`
-                        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
                         .eb-wrap {
                             display: flex; align-items: center; justify-content: center;
                             height: 100vh; background: #ececec;

@@ -2,8 +2,22 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { 
+    LayoutDashboard, 
+    Utensils, 
+    ClipboardList, 
+    Package, 
+    LineChart, 
+    Users, 
+    ShoppingCart, 
+    History, 
+    LogOut,
+    Menu,
+    X
+} from 'lucide-react';
+import { cn } from '../../lib/utils';
 
-function Sidebar() {
+export default function Sidebar() {
     const { user, logout } = useAuth();
     const { clearCart } = useCart();
     const navigate = useNavigate();
@@ -17,24 +31,24 @@ function Sidebar() {
     };
 
     const adminLinks = [
-        { to: '/dashboard', icon: '📊', label: 'Dashboard' },
-        { to: '/menu', icon: '🍔', label: 'Menu' },
-        { to: '/orders', icon: '📋', label: 'Orders' },
-        { to: '/inventory', icon: '📦', label: 'Inventory' },
-        { to: '/reports', icon: '📈', label: 'Reports' },
-        { to: '/users', icon: '👥', label: 'User Management' },
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/menu', icon: Utensils, label: 'Menu' },
+        { to: '/orders', icon: ClipboardList, label: 'Orders' },
+        { to: '/inventory', icon: Package, label: 'Inventory' },
+        { to: '/reports', icon: LineChart, label: 'Reports' },
+        { to: '/users', icon: Users, label: 'User Management' },
     ];
 
     const cashierLinks = [
-        { to: '/orders', icon: '📋', label: 'POS Orders' },
-        { to: '/menu', icon: '🍔', label: 'Menu' },
-        { to: '/inventory', icon: '📦', label: 'Inventory' },
+        { to: '/orders', icon: ClipboardList, label: 'POS Orders' },
+        { to: '/menu', icon: Utensils, label: 'Menu' },
+        { to: '/inventory', icon: Package, label: 'Inventory' },
     ];
 
-   const customerLinks = [
-        { to: '/menu', icon: '🍔', label: 'Browse Menu' },
-        { to: '/orders', icon: '🛒', label: 'Place Order' },
-        { to: '/history', icon: '📋', label: 'Purchase History' },
+    const customerLinks = [
+        { to: '/menu', icon: Utensils, label: 'Browse Menu' },
+        { to: '/orders', icon: ShoppingCart, label: 'Place Order' },
+        { to: '/history', icon: History, label: 'Purchase History' },
     ];
  
     const links = user?.role === 'admin' ? adminLinks
@@ -42,204 +56,108 @@ function Sidebar() {
         : customerLinks;
 
     const SidebarContent = () => (
-        <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-                .sb-wrap {
-                    background: #1c1c2e !important;
-                    color: white;
-                    width: 256px;
-                    min-height: 100vh;
-                    display: flex;
-                    flex-direction: column;
-                    font-family: 'Poppins', sans-serif;
-                }
-                .sb-brand {
-                    padding: 1.5rem 1.25rem 1.2rem;
-                    border-bottom: 1px solid rgba(255,255,255,0.07);
-                }
-                .sb-brand h1 {
-                    font-size: 1.15rem;
-                    font-weight: 700;
-                    color: #ffffff;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-                .sb-brand h1 span.icon {
-                    width: 38px; height: 38px;
-                    background: linear-gradient(135deg, #e74c3c, #c0392b);
-                    border-radius: 12px;
-                    display: flex; align-items: center; justify-content: center;
-                    font-size: 1.1rem;
-                    box-shadow: 0 4px 12px rgba(231,76,60,0.4);
-                }
-                .sb-brand p {
-                    font-size: 0.65rem;
-                    color: rgba(255,255,255,0.35);
-                    text-transform: uppercase;
-                    letter-spacing: 0.1em;
-                    margin-top: 6px;
-                    font-weight: 500;
-                }
-                .sb-nav {
-                    flex: 1;
-                    padding: 1rem 0.75rem;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 2px;
-                }
-                .sb-nav-label {
-                    font-size: 0.6rem;
-                    font-weight: 700;
-                    color: rgba(255,255,255,0.22);
-                    text-transform: uppercase;
-                    letter-spacing: 0.12em;
-                    padding: 0.5rem 0.65rem 0.3rem;
-                }
-                .sb-link {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    padding: 0.65rem 0.85rem;
-                    border-radius: 10px;
-                    text-decoration: none;
-                    color: rgba(255,255,255,0.5);
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    transition: all 0.18s;
-                    position: relative;
-                }
-                .sb-link:hover {
-                    background: rgba(255,255,255,0.07);
-                    color: rgba(255,255,255,0.85);
-                }
-                .sb-link.active {
-                    background: rgba(231,76,60,0.18);
-                    color: #ffffff;
-                }
-                .sb-link.active::before {
-                    content: '';
-                    position: absolute; left: 0; top: 20%; bottom: 20%;
-                    width: 3px; border-radius: 0 3px 3px 0;
-                    background: #e74c3c;
-                }
-                .sb-footer {
-                    padding: 1rem 1.25rem 1.25rem;
-                    border-top: 1px solid rgba(255,255,255,0.07);
-                }
-                .sb-user-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin-bottom: 0.85rem;
-                }
-                .sb-avatar {
-                    width: 34px; height: 34px;
-                    border-radius: 50%;
-                    background: linear-gradient(135deg, #e74c3c, #c0392b);
-                    display: flex; align-items: center; justify-content: center;
-                    font-size: 0.75rem; font-weight: 700; color: #fff;
-                    flex-shrink: 0;
-                    box-shadow: 0 2px 8px rgba(231,76,60,0.35);
-                }
-                .sb-user-name {
-                    font-size: 0.82rem; font-weight: 600; color: #fff;
-                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                }
-                .sb-user-role {
-                    font-size: 0.63rem; color: rgba(255,255,255,0.35);
-                    text-transform: capitalize;
-                }
-                .sb-logout-btn {
-                    width: 100%;
-                    background: rgba(231,76,60,0.15);
-                    border: 1px solid rgba(231,76,60,0.25);
-                    color: #ff8a80;
-                    padding: 0.6rem;
-                    border-radius: 10px;
-                    font-family: 'Poppins', sans-serif;
-                    font-size: 0.82rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: background 0.18s, color 0.18s;
-                }
-                .sb-logout-btn:hover {
-                    background: rgba(231,76,60,0.3);
-                    color: #fff;
-                }
-            `}</style>
-
-            <div className="sb-wrap">
-                <div className="sb-brand">
-                    <h1><span className="icon">🍽️</span> Canteen</h1>
-                    <p>{user?.role} Panel</p>
+        <div className="flex flex-col h-full w-64 bg-slate-950 text-slate-50 font-sans border-r border-slate-800 shadow-xl">
+            {/* Brand Header */}
+            <div className="px-6 py-6 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                        <Utensils className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h1 className="text-lg font-bold text-white tracking-tight">Canteen</h1>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">
+                            {user?.role} Panel
+                        </p>
+                    </div>
                 </div>
+            </div>
 
-                <nav className="sb-nav">
-                    <div className="sb-nav-label">Navigation</div>
-                    {links.map(link => (
+            {/* Navigation Links */}
+            <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+                <div className="px-3 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    Navigation
+                </div>
+                {links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = location.pathname === link.to;
+                    return (
                         <Link
                             key={link.to}
                             to={link.to}
                             onClick={() => setMobileOpen(false)}
-                            className={`sb-link${location.pathname === link.to ? ' active' : ''}`}
+                            className={cn(
+                                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group relative",
+                                isActive 
+                                    ? "bg-primary/15 text-white" 
+                                    : "text-slate-400 hover:bg-white/5 hover:text-white"
+                            )}
                         >
-                            <span>{link.icon}</span>
+                            <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-slate-400 group-hover:text-white")} />
                             {link.label}
+                            {isActive && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-r-md" />
+                            )}
                         </Link>
-                    ))}
-                </nav>
+                    );
+                })}
+            </nav>
 
-                <div className="sb-footer">
-                    <div className="sb-user-row">
-                        <div className="sb-avatar">
-                            {user?.name?.charAt(0).toUpperCase()}
+            {/* User Footer */}
+            <div className="p-5 border-t border-white/10 bg-slate-950/50">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white shadow-md shadow-primary/20 shrink-0">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-white truncate">
+                            {user?.name || 'User'}
                         </div>
-                        <div style={{flex:1, overflow:'hidden'}}>
-                            <div className="sb-user-name">{user?.name}</div>
-                            <div className="sb-user-role">{user?.role}</div>
+                        <div className="text-[11px] text-slate-400 capitalize truncate">
+                            {user?.role}
                         </div>
                     </div>
-                    <button onClick={handleLogout} className="sb-logout-btn">
-                        🚪 Logout
-                    </button>
                 </div>
+                <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                </button>
             </div>
-        </>
+        </div>
     );
 
     return (
         <>
             {/* Mobile Toggle Button */}
             <button
-                className="lg:hidden fixed top-4 left-4 z-50 bg-gray-900 text-white p-2 rounded-lg shadow-lg"
+                className="lg:hidden fixed top-3 left-4 z-50 bg-slate-900 text-white p-2 rounded-md shadow-md border border-slate-700"
                 onClick={() => setMobileOpen(!mobileOpen)}
-                style={{ background: '#1c1c2e', fontFamily: 'Poppins, sans-serif' }}
             >
-                {mobileOpen ? '✕' : '☰'}
+                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
             {/* Mobile Overlay */}
             {mobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                    className="lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity"
                     onClick={() => setMobileOpen(false)}
                 />
             )}
 
             {/* Mobile Sidebar */}
-            <div className={`lg:hidden fixed top-0 left-0 z-40 h-full transform transition-transform duration-300
-                ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={cn(
+                "lg:hidden fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out",
+                mobileOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
                 <SidebarContent />
             </div>
 
             {/* Desktop Sidebar */}
-            <div className="hidden lg:block flex-shrink-0">
+            <div className="hidden lg:block flex-shrink-0 h-full">
                 <SidebarContent />
             </div>
         </>
     );
 }
-
-export default Sidebar;

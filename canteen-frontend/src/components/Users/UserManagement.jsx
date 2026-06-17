@@ -25,7 +25,7 @@ export default function UserManagement() {
     setLoading(true);
     api.get('/users')
       .then(r => setUsers(r.data))
-      .catch(console.log)
+      .catch(console.error)
       .finally(() => { setLoading(false); setTimeout(() => setShow(true), 60); });
   };
   useEffect(() => { fetchUsers(); }, []);
@@ -71,7 +71,6 @@ export default function UserManagement() {
   return (
     <Layout>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         .um { font-family:'Poppins',sans-serif; }
         .um-title { font-size:1.45rem;font-weight:800;color:#1a1a2e;margin-bottom:2px;letter-spacing:-0.3px; }
         .um-sub   { font-size:0.8rem;color:#aaa;margin-bottom:1.4rem; }
@@ -109,10 +108,9 @@ export default function UserManagement() {
         .um-del-btn{padding:0.3rem 0.75rem;border-radius:8px;border:1.5px solid rgba(231,76,60,0.2);background:transparent;color:#e74c3c;font-family:'Poppins',sans-serif;font-size:0.74rem;font-weight:600;cursor:pointer;transition:all 0.18s;}
         .um-del-btn:hover{background:rgba(231,76,60,0.08);border-color:#e74c3c;}
         .um-shimmer{background:linear-gradient(90deg,#f0f0f0 25%,#fafafa 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;height:52px;margin-bottom:3px;}
-        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
         .um-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}
         .um-modal{background:#fff;border-radius:20px;box-shadow:0 16px 48px rgba(0,0,0,0.16);width:100%;max-width:420px;font-family:'Poppins',sans-serif;animation:mIn 0.25s cubic-bezier(0.16,1,0.3,1);}
-        @keyframes mIn{from{opacity:0;transform:scale(0.93) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes mIn{from{opacity:0;transform:scale(0.93) translateY(14px)}
         .um-m-head{padding:1.2rem 1.5rem 0.9rem;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;}
         .um-m-title{font-size:1rem;font-weight:700;color:#1a1a2e;}
         .um-m-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:#bbb;transition:color 0.15s;}
@@ -127,8 +125,7 @@ export default function UserManagement() {
         .um-m-save{padding:0.58rem 1.4rem;border-radius:10px;border:none;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:opacity 0.18s;}
         .um-m-save:disabled{opacity:0.55;cursor:not-allowed;}
         .um-spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;margin-right:6px;}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes shimBarAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        }
       `}</style>
 
       <div className="um">

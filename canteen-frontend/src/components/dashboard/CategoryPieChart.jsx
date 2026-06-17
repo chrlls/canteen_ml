@@ -1,59 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Pie, PieChart } from 'recharts';
 import api from '../../services/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { ChartContainer, ChartLegend, ChartLegendContent } from '../ui/chart';
 
-const COLORS = ['#e74c3c', '#3498db', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c'];
-
-function CategoryPieChart() {
+export default function CategoryPieChart() {
     const [data, setData] = useState([]);
+    const [config, setConfig] = useState({ sales: { label: "Sales" } });
 
     useEffect(() => {
         api.get('/reports/categories')
             .then(res => {
-                // Parse total as a number so recharts can render it
-                const parsed = res.data.map(item => ({
-                    ...item,
-                    total: parseFloat(item.total),
-                }));
-                setData(parsed);
+                // Tailwind standard colors for pie chart segments
+                const colors = ['#E64D3D', '#eb6b5e', '#f08980', '#f5a8a1', '#fac6c2'];
+                
+                const formattedData = res.data.map((item, index) => {
+                    const key = item.name.toLowerCase().replace(/\s+/g, '');
+                    return {
+                        category: key,
+                        name: item.name,
+                        sales: parseFloat(item.total),
+                        fill: colors[index % colors.length]
+                    };
+                });
+                
+                const newConfig = { sales: { label: "Sales" } };
+                formattedData.forEach((item, index) => {
+                    newConfig[item.category] = {
+                        label: item.name,
+                        color: colors[index % colors.length]
+                    };
+                });
+                
+                setData(formattedData);
+                setConfig(newConfig);
             })
-            .catch(err => console.log(err));
+            .catch(console.error);
     }, []);
 
     return (
-        <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-                <Pie
-                    data={data}
-                    dataKey="total"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                >
-                    {data.map((entry, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
-                <Tooltip
-                    formatter={(value) => `₱${Number(value).toLocaleString()}`}
-                    contentStyle={{
-                        fontFamily: 'Poppins, sans-serif',
-                        fontSize: '0.8rem',
-                        borderRadius: '10px',
-                        border: '1px solid #f0f0f0',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    }}
-                />
-                <Legend
-                    wrapperStyle={{
-                        fontFamily: 'Poppins, sans-serif',
-                        fontSize: '0.75rem',
-                    }}
-                />
-            </PieChart>
-        </ResponsiveContainer>
+        <Card className="h-full border-border/50 shadow-sm flex flex-col">
+            <CardHeader className="items-center pb-2">
+                <CardTitle>Sales by Category</CardTitle>
+                <CardDescription>All Time Revenue Distribution</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0 flex items-center justify-center">
+                {data.length > 0 ? (
+                    <ChartContainer
+                        config={config}
+                        className="mx-auto aspect-square max-h-[250px] w-full"
+                    >
+                        <PieChart>
+                            <Pie data={data} dataKey="sales" nameKey="category" />
+                            <ChartLegend
+                                content={<ChartLegendContent nameKey="category" />}
+                                className="-translate-y-2 flex-wrap gap-2 *:basis-1/3 *:justify-center"
+                            />
+                        </PieChart>
+                    </ChartContainer>
+                ) : (
+                    <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">Loading...</div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
-
-export default CategoryPieChart;

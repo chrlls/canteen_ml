@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import api from '../../services/api';
-
-const STATUS_COLORS = {
-    Pending:   { bg: 'rgba(243,156,18,0.12)',  color: '#f39c12', border: 'rgba(243,156,18,0.25)'  },
-    Preparing: { bg: 'rgba(52,152,219,0.12)',  color: '#3498db', border: 'rgba(52,152,219,0.25)'  },
-    Ready:     { bg: 'rgba(39,174,96,0.12)',   color: '#27ae60', border: 'rgba(39,174,96,0.25)'   },
-    Completed: { bg: 'rgba(150,150,150,0.10)', color: '#999',    border: 'rgba(150,150,150,0.2)'  },
-    Cancelled: { bg: 'rgba(231,76,60,0.10)',   color: '#e74c3c', border: 'rgba(231,76,60,0.2)'    },
-};
+import React, { useState, useCallback, useEffect } from 'react';
+import orderService from '../../services/orderService';
+import usePolling from '../../hooks/usePolling';
+import ORDER_STATUS from '../../constants/orderStatus';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Button } from '../ui/button';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../ui/pagination';
+import { Loader2, Inbox, ClipboardList } from 'lucide-react';
 
 const nextStatus = {
     Pending:   'Preparing',
@@ -21,16 +20,18 @@ const nextLabel = {
     Ready:     '🎉 Complete',
 };
 
-function OrderQueue() {
-    const [orders, setOrders]         = useState([]);
-    const [loading, setLoading]       = useState(true);
+export default function OrderQueue() {
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState(null);
-    const [pulse, setPulse]           = useState(false);
-    const [updating, setUpdating]     = useState(null);
+    const [pulse, setPulse] = useState(false);
+    const [updating, setUpdating] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchOrders = useCallback(async () => {
         try {
-            const res = await api.get('/orders');
+            const res = await orderService.getOrders();
             const sorted = res.data.sort((a, b) => {
                 const priority = { Pending: 0, Preparing: 1, Ready: 2, Completed: 3, Cancelled: 4 };
                 return (priority[a.status] ?? 9) - (priority[b.status] ?? 9);
@@ -46,17 +47,13 @@ function OrderQueue() {
         }
     }, []);
 
-    useEffect(() => {
-        fetchOrders();
-        const interval = setInterval(fetchOrders, 5000); // ✅ every 5 seconds
-        return () => clearInterval(interval);
-    }, [fetchOrders]);
+    usePolling(fetchOrders, 5000);
 
     const updateStatus = async (id, status) => {
         setUpdating(id);
         try {
-            await api.patch(`/orders/${id}/status`, { status });
-            await fetchOrders(); // ✅ immediate refresh
+            await orderService.updateStatus(id, status);
+            await fetchOrders();
         } catch {
             alert('Failed to update status.');
         } finally {
@@ -71,177 +68,152 @@ function OrderQueue() {
         return `${Math.floor(diff / 3600)}h ago`;
     };
 
+    // Pagination
+    const totalPages = Math.ceil(orders.length / itemsPerPage);
+    const paginatedOrders = orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     return (
-        <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-                .oq { font-family: 'Poppins', sans-serif; }
-                .oq-card {
-                    background: #fff; border-radius: 20px;
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-                    border: 1px solid #f0f0f0; overflow: hidden; position: relative;
-                }
-                .oq-card::before {
-                    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-                    background: linear-gradient(90deg, #e74c3c, #ff8a80, #e74c3c);
-                    background-size: 200% 100%; animation: oqShim 3s linear infinite;
-                }
-                @keyframes oqShim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-                .oq-header {
-                    display: flex; align-items: center; justify-content: space-between;
-                    padding: 1.25rem 1.5rem 1rem; flex-wrap: wrap; gap: 0.5rem;
-                    border-bottom: 1px solid #f5f5f5;
-                }
-                .oq-title { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
-                .oq-sub   { font-size: 0.68rem; color: #bbb; margin-top: 2px; }
-                .oq-live {
-                    display: flex; align-items: center; gap: 6px;
-                    background: #f8f8f8; border: 1px solid #ebebeb;
-                    border-radius: 20px; padding: 0.3rem 0.8rem;
-                    font-size: 0.68rem; font-weight: 600; color: #888;
-                }
-                .oq-live-dot {
-                    width: 7px; height: 7px; border-radius: 50%; background: #27ae60;
-                    animation: oqPulse 2s ease-in-out infinite;
-                }
-                @keyframes oqPulse {
-                    0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(39,174,96,0.4)}
-                    50%    {opacity:0.8;transform:scale(1.15);box-shadow:0 0 0 4px rgba(39,174,96,0)}
-                }
-                .oq-live-dot.pulse { background: #e74c3c; }
-                .oq-body { padding: 1.25rem 1.5rem 1.5rem; }
-                .oq-empty { text-align: center; padding: 3rem 1rem; color: #bbb; }
-                .oq-empty-icon { font-size: 3rem; margin-bottom: 0.5rem; }
-                .oq-table { width: 100%; border-collapse: collapse; }
-                .oq-table th {
-                    text-align: left; padding: 0.5rem 0.75rem;
-                    font-size: 0.67rem; color: #bbb; font-weight: 700;
-                    text-transform: uppercase; letter-spacing: 0.09em;
-                    border-bottom: 1px solid #f0f0f0;
-                }
-                .oq-table td {
-                    padding: 0.85rem 0.75rem; border-bottom: 1px solid #f8f8f8;
-                    font-size: 0.82rem; vertical-align: middle;
-                }
-                .oq-table tr:last-child td { border-bottom: none; }
-                .oq-table tr:hover td { background: #fafafa; }
-                .oq-order-num  { font-weight: 800; color: #1a1a2e; font-size: 0.82rem; }
-                .oq-order-time { font-size: 0.65rem; color: #bbb; margin-top: 1px; }
-                .oq-customer   { color: #555; font-weight: 500; }
-                .oq-total      { color: #e74c3c; font-weight: 800; }
-                .oq-status-badge {
-                    padding: 0.22rem 0.65rem; border-radius: 20px;
-                    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
-                    display: inline-block;
-                }
-                .oq-items-list { font-size: 0.72rem; color: #888; }
-                .oq-items-list span { display: block; }
-                .oq-action-btn {
-                    padding: 0.4rem 0.85rem; border: none; border-radius: 8px;
-                    font-family: 'Poppins', sans-serif; font-size: 0.72rem; font-weight: 700;
-                    cursor: pointer; transition: opacity 0.18s, transform 0.18s;
-                    background: linear-gradient(135deg, #e74c3c, #c0392b);
-                    color: #fff; box-shadow: 0 2px 8px rgba(231,76,60,0.25);
-                    white-space: nowrap;
-                }
-                .oq-action-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-                .oq-action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-                .oq-shimmer {
-                    background: linear-gradient(90deg,#f0f0f0 25%,#fafafa 50%,#f0f0f0 75%);
-                    background-size: 200% 100%; animation: oqShimLoad 1.4s infinite;
-                    border-radius: 12px; height: 48px; margin-bottom: 0.5rem;
-                }
-                @keyframes oqShimLoad { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-            `}</style>
-
-            <div className="oq">
-                <div className="oq-card">
-                    <div className="oq-header">
-                        <div>
-                            <div className="oq-title">📋 Order Queue</div>
-                            <div className="oq-sub">
-                                {lastUpdate ? `Updated ${timeAgo(lastUpdate.toISOString())}` : 'Loading...'}
-                                {' · '}{orders.length} order{orders.length !== 1 ? 's' : ''}
-                            </div>
-                        </div>
-                        <div className="oq-live">
-                            <span className={`oq-live-dot ${pulse ? 'pulse' : ''}`} />
-                            Live · 5s
-                        </div>
-                    </div>
-
-                    <div className="oq-body">
-                        {loading ? (
-                            [1,2,3].map(i => <div key={i} className="oq-shimmer" />)
-                        ) : orders.length === 0 ? (
-                            <div className="oq-empty">
-                                <div className="oq-empty-icon">📭</div>
-                                <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>No orders yet</p>
-                                <p style={{ fontSize: '0.75rem', marginTop: 4 }}>New orders appear here automatically</p>
-                            </div>
-                        ) : (
-                            <div style={{ overflowX: 'auto' }}>
-                                <table className="oq-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Order</th>
-                                            <th>Customer</th>
-                                            <th>Items</th>
-                                            <th>Total</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {orders.map(order => {
-                                            const sc = STATUS_COLORS[order.status] || STATUS_COLORS.Pending;
-                                            return (
-                                                <tr key={order.id}>
-                                                    <td>
-                                                        <div className="oq-order-num">{order.order_number}</div>
-                                                        <div className="oq-order-time">{order.created_at ? timeAgo(order.created_at) : ''}</div>
-                                                    </td>
-                                                    <td className="oq-customer">{order.user?.name || '—'}</td>
-                                                    <td>
-                                                        <div className="oq-items-list">
-                                                            {order.order_items?.slice(0, 2).map((item, i) => (
-                                                                <span key={i}>{item.menu_item?.name || 'Item'} ×{item.quantity}</span>
-                                                            ))}
-                                                            {order.order_items?.length > 2 && (
-                                                                <span style={{ color: '#bbb' }}>+{order.order_items.length - 2} more</span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="oq-total">₱{Number(order.total_amount).toFixed(2)}</td>
-                                                    <td>
-                                                        <span className="oq-status-badge"
-                                                            style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                                                            {order.status}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        {nextStatus[order.status] && (
-                                                            <button
-                                                                className="oq-action-btn"
-                                                                disabled={updating === order.id}
-                                                                onClick={() => updateStatus(order.id, nextStatus[order.status])}
-                                                            >
-                                                                {updating === order.id ? '⏳' : nextLabel[order.status]}
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
+        <Card className="overflow-hidden border-border/50 shadow-sm relative group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/50 opacity-80 z-10"></div>
+            
+            <CardHeader className="flex flex-row items-start sm:items-center justify-between pb-4 border-b border-border/50">
+                <div className="space-y-1 mt-1">
+                    <CardTitle className="text-xl font-extrabold flex items-center gap-2">
+                        <ClipboardList className="w-5 h-5" /> Order Queue
+                    </CardTitle>
+                    <CardDescription>
+                        {lastUpdate ? `Updated ${timeAgo(lastUpdate.toISOString())}` : 'Loading...'}
+                        {' · '}{orders.length} order{orders.length !== 1 ? 's' : ''}
+                    </CardDescription>
                 </div>
-            </div>
-        </>
+                <div className="flex items-center gap-2 bg-muted/50 border border-border/50 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground shadow-sm">
+                    <span className={`w-2 h-2 rounded-full transition-colors ${pulse ? 'bg-destructive' : 'bg-success shadow-[0_0_8px_rgba(39,174,96,0.6)] animate-pulse'}`} />
+                    Live · 5s
+                </div>
+            </CardHeader>
+
+            <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader className="bg-muted/30">
+                            <TableRow>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Order</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Customer</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Items</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Total</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Status</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                [1, 2, 3].map(i => (
+                                    <TableRow key={i}>
+                                        <TableCell colSpan={6} className="h-16">
+                                            <div className="w-full h-8 bg-muted/50 animate-pulse rounded-md" />
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : paginatedOrders.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-40 text-center">
+                                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                            <Inbox className="w-10 h-10 mb-3 opacity-30" />
+                                            <p className="font-semibold text-sm">No orders yet</p>
+                                            <p className="text-xs mt-1">New orders appear here automatically</p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                paginatedOrders.map(order => {
+                                    const sc = ORDER_STATUS[order.status] || ORDER_STATUS.Pending;
+                                    return (
+                                        <TableRow key={order.id} className="hover:bg-muted/20 transition-colors">
+                                            <TableCell>
+                                                <div className="font-bold text-foreground text-sm tracking-tight">{order.order_number}</div>
+                                                <div className="text-[10px] font-medium text-muted-foreground mt-0.5">{order.created_at ? timeAgo(order.created_at) : ''}</div>
+                                            </TableCell>
+                                            <TableCell className="font-medium text-sm">
+                                                {order.user?.name || '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-xs text-muted-foreground flex flex-col gap-0.5">
+                                                    {order.order_items?.slice(0, 2).map((item, i) => (
+                                                        <span key={i} className="truncate max-w-[180px]">{item.menu_item?.name || 'Item'} <strong className="text-foreground">×{item.quantity}</strong></span>
+                                                    ))}
+                                                    {order.order_items?.length > 2 && (
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider mt-0.5">+{order.order_items.length - 2} more</span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-extrabold text-primary text-sm">
+                                                ₱{Number(order.total_amount).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <span 
+                                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border backdrop-blur-md"
+                                                    style={{ background: sc.bg, color: sc.color, borderColor: sc.border }}
+                                                >
+                                                    {order.status}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                {nextStatus[order.status] ? (
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 text-xs font-bold shadow-sm"
+                                                        disabled={updating === order.id}
+                                                        onClick={() => updateStatus(order.id, nextStatus[order.status])}
+                                                    >
+                                                        {updating === order.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                        {updating === order.id ? 'Updating...' : nextLabel[order.status]}
+                                                    </Button>
+                                                ) : (
+                                                    <span className="text-xs font-bold text-muted-foreground px-2">—</span>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+
+            {totalPages > 1 && (
+                <div className="border-t border-border/50 p-4">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious 
+                                    href="#" 
+                                    onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.max(1, p - 1)); }} 
+                                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                                />
+                            </PaginationItem>
+                            {[...Array(totalPages)].map((_, i) => (
+                                <PaginationItem key={i}>
+                                    <PaginationLink 
+                                        href="#" 
+                                        isActive={currentPage === i + 1}
+                                        onClick={(e) => { e.preventDefault(); setCurrentPage(i + 1); }}
+                                    >
+                                        {i + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))}
+                            <PaginationItem>
+                                <PaginationNext 
+                                    href="#" 
+                                    onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.min(totalPages, p + 1)); }} 
+                                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
+        </Card>
     );
 }
-
-export default OrderQueue;

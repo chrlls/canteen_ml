@@ -13,7 +13,7 @@ const authService = {
     },
 
     logout: async () => {
-        try { await api.post('/logout'); } catch (err) {}
+        try { await api.post('/logout'); } catch (err) { console.error('Logout failed on server, continuing local logout:', err); }
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     },
