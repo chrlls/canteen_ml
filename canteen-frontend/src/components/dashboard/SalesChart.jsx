@@ -3,7 +3,6 @@ import { BarChart, Bar, XAxis, CartesianGrid } from 'recharts';
 import api from '../../services/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
-import { TrendingUp } from 'lucide-react';
 
 export default function SalesChart({ data: propData }) {
     const [data, setData] = useState([]);
@@ -73,7 +72,7 @@ export default function SalesChart({ data: propData }) {
             </CardContent>
             <CardFooter className="flex-col items-start gap-2 text-sm border-t border-border/50 pt-4 mt-auto">
                 <div className="flex gap-2 leading-none font-medium text-foreground">
-                    Sales are active <TrendingUp className="h-4 w-4 text-primary" />
+                    Sales are active
                 </div>
                 <div className="leading-none text-muted-foreground">
                     Showing daily revenue for the last 7 days

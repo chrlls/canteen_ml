@@ -3,8 +3,6 @@ import api from '../../services/api';
 import { Card, CardContent, CardFooter } from '../ui/card';
 import { Button } from '../ui/button';
 
-import { Edit, Trash2, CheckCircle2, XCircle, ShoppingCart, Loader2, Flame } from 'lucide-react';
-
 export default function MenuItemCard({ item, onEdit, onDelete, onAddToCart, onToggle, userRole, prediction }) {
   const [toggling, setToggling] = useState(false);
 
@@ -58,7 +56,7 @@ export default function MenuItemCard({ item, onEdit, onDelete, onAddToCart, onTo
         {/* High Demand Badge */}
         {prediction?.predicted_label === 'High Demand' && (
           <div className="absolute bottom-2 left-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-md text-[10px] font-extrabold flex items-center gap-1 shadow-sm z-10 tracking-widest uppercase">
-            <Flame className="w-3 h-3" /> High Demand
+            HOT
           </div>
         )}
       </div>
@@ -88,10 +86,10 @@ export default function MenuItemCard({ item, onEdit, onDelete, onAddToCart, onTo
         {userRole === 'admin' && (
           <>
             <Button variant="outline" size="sm" className="flex-1 h-8 text-xs font-semibold text-blue-500 hover:text-blue-600 border-border/50" onClick={onEdit}>
-              <Edit className="w-3 h-3 mr-1" /> Edit
+              Edit
             </Button>
             <Button variant="outline" size="sm" className="flex-1 h-8 text-xs font-semibold text-destructive hover:text-destructive border-border/50" onClick={handleDelete}>
-              <Trash2 className="w-3 h-3 mr-1" /> Delete
+              Delete
             </Button>
             <Button 
               variant="outline" 
@@ -100,7 +98,7 @@ export default function MenuItemCard({ item, onEdit, onDelete, onAddToCart, onTo
               onClick={handleToggle}
               disabled={toggling}
             >
-              {toggling ? <Loader2 className="w-3 h-3 animate-spin" /> : item.is_available ? <><CheckCircle2 className="w-3 h-3 mr-1.5" /> Available</> : <><XCircle className="w-3 h-3 mr-1.5" /> Unavailable</>}
+              {toggling ? 'Loading...' : item.is_available ? <>Available</> : <>Unavailable</>}
             </Button>
           </>
         )}
@@ -110,7 +108,7 @@ export default function MenuItemCard({ item, onEdit, onDelete, onAddToCart, onTo
             disabled={!available}
             onClick={() => onAddToCart?.(item)}
           >
-            <ShoppingCart className="w-4 h-4 mr-2" /> Add to Cart
+            Add to Cart
           </Button>
         )}
       </CardFooter>

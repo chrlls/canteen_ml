@@ -5,8 +5,8 @@ import ORDER_STATUS from '../../constants/orderStatus';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../ui/pagination';
-import { Loader2, Inbox, ClipboardList } from 'lucide-react';
 
 const nextStatus = {
     Pending:   'Preparing',
@@ -15,9 +15,9 @@ const nextStatus = {
 };
 
 const nextLabel = {
-    Pending:   '🔥 Start Preparing',
-    Preparing: '✅ Mark Ready',
-    Ready:     '🎉 Complete',
+    Pending:   'Start Preparing',
+    Preparing: 'Mark Ready',
+    Ready:     'Complete',
 };
 
 export default function OrderQueue() {
@@ -29,14 +29,15 @@ export default function OrderQueue() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    const [search, setSearch] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'status_priority', direction: 'asc' });
+
     const fetchOrders = useCallback(async () => {
         try {
             const res = await orderService.getOrders();
-            const sorted = res.data.sort((a, b) => {
-                const priority = { Pending: 0, Preparing: 1, Ready: 2, Completed: 3, Cancelled: 4 };
-                return (priority[a.status] ?? 9) - (priority[b.status] ?? 9);
-            });
-            setOrders(sorted);
+            const priority = { Pending: 0, Preparing: 1, Ready: 2, Completed: 3, Cancelled: 4 };
+            const withPriority = res.data.map(o => ({ ...o, status_priority: priority[o.status] ?? 9 }));
+            setOrders(withPriority);
             setLastUpdate(new Date());
             setPulse(true);
             setTimeout(() => setPulse(false), 500);
@@ -48,6 +49,10 @@ export default function OrderQueue() {
     }, []);
 
     usePolling(fetchOrders, 5000);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search]);
 
     const updateStatus = async (id, status) => {
         setUpdating(id);
@@ -68,9 +73,40 @@ export default function OrderQueue() {
         return `${Math.floor(diff / 3600)}h ago`;
     };
 
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const filteredOrders = orders.filter(o => 
+        o.order_number?.toLowerCase().includes(search.toLowerCase()) || 
+        o.user?.name?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const sortedOrders = [...filteredOrders].sort((a, b) => {
+        const { key, direction } = sortConfig;
+        let aVal = a[key];
+        let bVal = b[key];
+        
+        if (key === 'user') {
+            aVal = a.user?.name || '';
+            bVal = b.user?.name || '';
+        } else if (key === 'total_amount') {
+            aVal = Number(a.total_amount);
+            bVal = Number(b.total_amount);
+        }
+        
+        if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     // Pagination
-    const totalPages = Math.ceil(orders.length / itemsPerPage);
-    const paginatedOrders = orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+    const paginatedOrders = sortedOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <Card className="overflow-hidden border-border/50 shadow-sm relative group">
@@ -79,16 +115,27 @@ export default function OrderQueue() {
             <CardHeader className="flex flex-row items-start sm:items-center justify-between pb-4 border-b border-border/50">
                 <div className="space-y-1 mt-1">
                     <CardTitle className="text-xl font-extrabold flex items-center gap-2">
-                        <ClipboardList className="w-5 h-5" /> Order Queue
+                        Order Queue
                     </CardTitle>
                     <CardDescription>
                         {lastUpdate ? `Updated ${timeAgo(lastUpdate.toISOString())}` : 'Loading...'}
                         {' · '}{orders.length} order{orders.length !== 1 ? 's' : ''}
                     </CardDescription>
                 </div>
-                <div className="flex items-center gap-2 bg-muted/50 border border-border/50 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground shadow-sm">
-                    <span className={`w-2 h-2 rounded-full transition-colors ${pulse ? 'bg-destructive' : 'bg-success shadow-[0_0_8px_rgba(39,174,96,0.6)] animate-pulse'}`} />
-                    Live · 5s
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative w-full sm:w-auto">
+                        <Input
+                            type="text"
+                            placeholder="Search order or customer..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="h-9 w-full sm:w-[250px] bg-background border-border/50 text-sm shadow-sm"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 bg-muted/50 border border-border/50 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground shadow-sm whitespace-nowrap">
+                        <span className={`w-2 h-2 rounded-full transition-colors ${pulse ? 'bg-destructive' : 'bg-success shadow-[0_0_8px_rgba(39,174,96,0.6)] animate-pulse'}`} />
+                        Live · 5s
+                    </div>
                 </div>
             </CardHeader>
 
@@ -97,11 +144,19 @@ export default function OrderQueue() {
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow>
-                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Order</TableHead>
-                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Customer</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('order_number')}>
+                                    Order {sortConfig.key === 'order_number' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                </TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('user')}>
+                                    Customer {sortConfig.key === 'user' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                </TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Items</TableHead>
-                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Total</TableHead>
-                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Status</TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('total_amount')}>
+                                    Total {sortConfig.key === 'total_amount' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                </TableHead>
+                                <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('status_priority')}>
+                                    Status {sortConfig.key === 'status_priority' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                </TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -118,7 +173,6 @@ export default function OrderQueue() {
                                 <TableRow>
                                     <TableCell colSpan={6} className="h-40 text-center">
                                         <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                            <Inbox className="w-10 h-10 mb-3 opacity-30" />
                                             <p className="font-semibold text-sm">No orders yet</p>
                                             <p className="text-xs mt-1">New orders appear here automatically</p>
                                         </div>
@@ -165,7 +219,6 @@ export default function OrderQueue() {
                                                         disabled={updating === order.id}
                                                         onClick={() => updateStatus(order.id, nextStatus[order.status])}
                                                     >
-                                                        {updating === order.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                                                         {updating === order.id ? 'Updating...' : nextLabel[order.status]}
                                                     </Button>
                                                 ) : (

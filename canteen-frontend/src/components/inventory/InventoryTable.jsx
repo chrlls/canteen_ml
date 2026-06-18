@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Label } from '../ui/label';
 
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../ui/pagination';
-import { PackageSearch, AlertTriangle, Search, Plus, Loader2 } from 'lucide-react';
 
 export default function InventoryTable() {
     const [items, setItems] = useState([]);
@@ -20,6 +19,9 @@ export default function InventoryTable() {
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
+    // Sorting
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
 
     // Adjust modal
     const [adjustId, setAdjustId] = useState(null);
@@ -51,6 +53,14 @@ export default function InventoryTable() {
     useEffect(() => {
         setCurrentPage(1);
     }, [search]);
+
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
     const handleAdjust = async (e) => {
         e.preventDefault();
@@ -118,9 +128,24 @@ export default function InventoryTable() {
         i.name.toLowerCase().includes(search.toLowerCase())
     );
 
+    const sortedItems = [...filtered].sort((a, b) => {
+        const { key, direction } = sortConfig;
+        let aVal = a[key];
+        let bVal = b[key];
+        
+        if (key === 'category') {
+            aVal = a.category?.name || '';
+            bVal = b.category?.name || '';
+        }
+        
+        if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     // Pagination logic
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-    const paginatedItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+    const paginatedItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const lowCount = items.filter(i => i.stock < 10).length;
 
@@ -146,12 +171,11 @@ export default function InventoryTable() {
                     <div className="flex items-center gap-3">
                         {lowCount > 0 && (
                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-destructive/15 text-destructive text-xs font-bold whitespace-nowrap border border-destructive/20">
-                                <AlertTriangle className="w-3.5 h-3.5" />
-                                {lowCount} Low Stock
+                                ⚠️ {lowCount} Low Stock
                             </div>
                         )}
                         <Button onClick={() => setShowAdd(true)} className="font-bold shadow-sm">
-                            <Plus className="w-4 h-4 mr-2" /> Add Product
+                            + Add Product
                         </Button>
                     </div>
                 </div>
@@ -164,7 +188,6 @@ export default function InventoryTable() {
 
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                         type="text"
                         placeholder="Search items..."
@@ -180,11 +203,19 @@ export default function InventoryTable() {
                         <Table>
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
-                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Item</TableHead>
-                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Category</TableHead>
-                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Stock</TableHead>
+                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('name')}>
+                                        Item {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    </TableHead>
+                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('category')}>
+                                        Category {sortConfig.key === 'category' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    </TableHead>
+                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('stock')}>
+                                        Stock {sortConfig.key === 'stock' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    </TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Status</TableHead>
-                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Availability</TableHead>
+                                    <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('is_available')}>
+                                        Availability {sortConfig.key === 'is_available' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    </TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground text-right">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -201,7 +232,6 @@ export default function InventoryTable() {
                                     <TableRow>
                                         <TableCell colSpan={6} className="h-32 text-center">
                                             <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                                <PackageSearch className="w-8 h-8 mb-2 opacity-50" />
                                                 <p className="font-medium text-sm">No items found</p>
                                             </div>
                                         </TableCell>
@@ -316,7 +346,6 @@ export default function InventoryTable() {
                             <DialogFooter>
                                 <Button type="button" variant="outline" onClick={closeAdjust}>Cancel</Button>
                                 <Button type="submit" disabled={saving || !form.quantity_change || !form.reason}>
-                                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {saving ? 'Saving...' : 'Apply Adjustment'}
                                 </Button>
                             </DialogFooter>
@@ -405,7 +434,6 @@ export default function InventoryTable() {
                             <DialogFooter>
                                 <Button type="button" variant="outline" onClick={closeAdd}>Cancel</Button>
                                 <Button type="submit" disabled={addSaving || !addForm.name || !addForm.price || !addForm.stock || !addForm.category_id}>
-                                    {addSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {addSaving ? 'Adding...' : 'Add Product'}
                                 </Button>
                             </DialogFooter>

@@ -10,7 +10,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Search, ShoppingCart, Plus, X, Trash2, PartyPopper } from 'lucide-react';
 
 export default function MenuList() {
     const [items, setItems] = useState([]);
@@ -78,7 +77,7 @@ export default function MenuList() {
                     <div className="flex gap-3">
                         {user?.role === 'customer' && (
                             <Button onClick={() => { setShowCart(true); setOrderError(''); }} className="relative font-bold shadow-sm">
-                                <ShoppingCart className="w-4 h-4 mr-2" /> Cart
+                                Cart
                                 {cartItemCount > 0 && (
                                     <span className="absolute -top-2 -right-2 bg-background text-primary border-2 border-primary text-[10px] font-extrabold rounded-full w-6 h-6 flex items-center justify-center">
                                         {cartItemCount}
@@ -88,7 +87,7 @@ export default function MenuList() {
                         )}
                         {user?.role === 'admin' && (
                             <Button onClick={() => { setEditItem(null); setShowForm(true); }} className="font-bold shadow-sm">
-                                <Plus className="w-4 h-4 mr-2" /> Add Item
+                                + Add Item
                             </Button>
                         )}
                     </div>
@@ -103,7 +102,6 @@ export default function MenuList() {
 
                 {/* Search */}
                 <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                         type="text"
                         placeholder="Search menu items..."
@@ -184,8 +182,8 @@ export default function MenuList() {
                                     <h2 className="text-xl font-extrabold tracking-tight text-foreground flex items-center gap-2">🛒 My Cart</h2>
                                     <p className="text-xs font-semibold text-muted-foreground mt-1 tracking-widest uppercase">{cartItemCount} items</p>
                                 </div>
-                                <button onClick={() => setShowCart(false)} className="text-muted-foreground hover:text-destructive transition-colors p-2 -mr-2">
-                                    <X className="w-6 h-6" />
+                                <button onClick={() => setShowCart(false)} className="text-muted-foreground hover:text-destructive transition-colors p-2 -mr-2 text-xs font-bold uppercase">
+                                    Close
                                 </button>
                             </div>
 
@@ -210,8 +208,8 @@ export default function MenuList() {
                                                     <span className="w-5 text-center text-sm font-bold">{item.quantity}</span>
                                                     <LongPressBtn className="w-7 h-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm hover:opacity-90 font-bold" onTrigger={() => adjustQuantity(item.id, 1)}>+</LongPressBtn>
                                                 </div>
-                                                <button className="text-muted-foreground opacity-50 group-hover:opacity-100 hover:text-destructive transition-all shrink-0 p-1 -mr-1" onClick={() => removeFromCart(item.id)}>
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-50 group-hover:opacity-100 hover:text-destructive transition-all shrink-0 p-1 -mr-1" onClick={() => removeFromCart(item.id)}>
+                                                    Remove
                                                 </button>
                                             </div>
                                         ))}
@@ -240,7 +238,7 @@ export default function MenuList() {
                                     onClick={handlePlaceOrder} 
                                     disabled={cart.length === 0}
                                 >
-                                    <PartyPopper className="w-5 h-5 mr-2" /> Place Order
+                                    Place Order
                                 </Button>
                                 <Button 
                                     variant="ghost" 

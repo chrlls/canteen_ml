@@ -2,19 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { 
-    LayoutDashboard, 
-    Utensils, 
-    ClipboardList, 
-    Package, 
-    LineChart, 
-    Users, 
-    ShoppingCart, 
-    History, 
-    LogOut,
-    Menu,
-    X
-} from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function Sidebar() {
@@ -31,24 +18,24 @@ export default function Sidebar() {
     };
 
     const adminLinks = [
-        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { to: '/menu', icon: Utensils, label: 'Menu' },
-        { to: '/orders', icon: ClipboardList, label: 'Orders' },
-        { to: '/inventory', icon: Package, label: 'Inventory' },
-        { to: '/reports', icon: LineChart, label: 'Reports' },
-        { to: '/users', icon: Users, label: 'User Management' },
+        { to: '/dashboard', label: 'Dashboard' },
+        { to: '/menu', label: 'Menu' },
+        { to: '/orders', label: 'Orders' },
+        { to: '/inventory', label: 'Inventory' },
+        { to: '/reports', label: 'Reports' },
+        { to: '/users', label: 'User Management' },
     ];
 
     const cashierLinks = [
-        { to: '/orders', icon: ClipboardList, label: 'POS Orders' },
-        { to: '/menu', icon: Utensils, label: 'Menu' },
-        { to: '/inventory', icon: Package, label: 'Inventory' },
+        { to: '/orders', label: 'POS Orders' },
+        { to: '/menu', label: 'Menu' },
+        { to: '/inventory', label: 'Inventory' },
     ];
 
     const customerLinks = [
-        { to: '/menu', icon: Utensils, label: 'Browse Menu' },
-        { to: '/orders', icon: ShoppingCart, label: 'Place Order' },
-        { to: '/history', icon: History, label: 'Purchase History' },
+        { to: '/menu', label: 'Browse Menu' },
+        { to: '/orders', label: 'Place Order' },
+        { to: '/history', label: 'Purchase History' },
     ];
  
     const links = user?.role === 'admin' ? adminLinks
@@ -60,8 +47,8 @@ export default function Sidebar() {
             {/* Brand Header */}
             <div className="px-6 py-6 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                        <Utensils className="w-5 h-5" />
+                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 font-bold text-xs">
+                        C
                     </div>
                     <div>
                         <h1 className="text-lg font-bold text-white tracking-tight">Canteen</h1>
@@ -78,7 +65,6 @@ export default function Sidebar() {
                     Navigation
                 </div>
                 {links.map((link) => {
-                    const Icon = link.icon;
                     const isActive = location.pathname === link.to;
                     return (
                         <Link
@@ -92,7 +78,6 @@ export default function Sidebar() {
                                     : "text-slate-400 hover:bg-white/5 hover:text-white"
                             )}
                         >
-                            <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-slate-400 group-hover:text-white")} />
                             {link.label}
                             {isActive && (
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-r-md" />
@@ -121,7 +106,6 @@ export default function Sidebar() {
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
                 >
-                    <LogOut className="w-4 h-4" />
                     Logout
                 </button>
             </div>
@@ -135,7 +119,7 @@ export default function Sidebar() {
                 className="lg:hidden fixed top-3 left-4 z-50 bg-slate-900 text-white p-2 rounded-md shadow-md border border-slate-700"
                 onClick={() => setMobileOpen(!mobileOpen)}
             >
-                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileOpen ? <span className="font-bold text-xs uppercase px-1">Close</span> : <span className="font-bold text-xs uppercase px-1">Menu</span>}
             </button>
 
             {/* Mobile Overlay */}

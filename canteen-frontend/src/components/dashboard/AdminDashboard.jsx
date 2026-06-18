@@ -5,13 +5,11 @@ import CategoryPieChart from './CategoryPieChart';
 import OrderTrendChart from './OrderTrendChart';
 import api from '../../services/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Banknote, ReceiptText, BarChart3, Clock } from 'lucide-react';
-
 const STAT_CARDS = [
-  { key: 'total_sales',         label: 'Total Sales',    icon: Banknote,    prefix: '₱', format: v => Number(v).toLocaleString(),  colorClass: 'text-primary',   bgClass: 'bg-primary/10' },
-  { key: 'total_orders',        label: 'Total Orders',   icon: ReceiptText, prefix: '',  format: v => Number(v).toLocaleString(),  colorClass: 'text-blue-500',  bgClass: 'bg-blue-500/10' },
-  { key: 'average_order_value', label: 'Avg. Order',     icon: BarChart3,   prefix: '₱', format: v => Number(v).toFixed(2),        colorClass: 'text-success',   bgClass: 'bg-success/10' },
-  { key: 'pending_orders',      label: 'Pending Orders', icon: Clock,       prefix: '',  format: v => Number(v || 0),              colorClass: 'text-warning',   bgClass: 'bg-warning/10' },
+  { key: 'total_sales',         label: 'Total Sales',    prefix: '₱', format: v => Number(v).toLocaleString(),  colorClass: 'text-primary',   bgClass: 'bg-primary/10' },
+  { key: 'total_orders',        label: 'Total Orders',   prefix: '',  format: v => Number(v).toLocaleString(),  colorClass: 'text-blue-500',  bgClass: 'bg-blue-500/10' },
+  { key: 'average_order_value', label: 'Avg. Order',     prefix: '₱', format: v => Number(v).toFixed(2),        colorClass: 'text-success',   bgClass: 'bg-success/10' },
+  { key: 'pending_orders',      label: 'Pending Orders', prefix: '',  format: v => Number(v || 0),              colorClass: 'text-warning',   bgClass: 'bg-warning/10' },
 ];
 
 export default function AdminDashboard() {
@@ -68,14 +66,10 @@ export default function AdminDashboard() {
             ))
           ) : (
             STAT_CARDS.map((c, i) => {
-              const Icon = c.icon;
               return (
                 <Card key={i} className="overflow-hidden relative border-border/50 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-${c.colorClass.split('-')[1]} to-transparent opacity-50`}></div>
                   <CardContent className="p-6 py-8 flex items-center gap-5 min-h-[140px]">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${c.bgClass} ${c.colorClass}`}>
-                      <Icon className="w-7 h-7" />
-                    </div>
                     <div>
                       <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{c.label}</div>
                       <div className={`text-3xl font-extrabold tracking-tight ${c.colorClass}`}>

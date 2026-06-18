@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Loader2 } from 'lucide-react';
 
 export default function MenuForm({ item, categories, onClose, onSave, onSaved }) {
   const [form, setForm] = useState({ name: '', price: '', stock: '', category_id: '', is_available: true, image: null });
@@ -149,7 +148,6 @@ export default function MenuForm({ item, categories, onClose, onSave, onSaved })
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving || !form.name || !form.price}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {saving ? 'Saving...' : item ? 'Update Item' : 'Add Item'}
           </Button>
         </DialogFooter>

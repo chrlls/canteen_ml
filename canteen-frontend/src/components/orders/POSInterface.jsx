@@ -15,7 +15,6 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { Separator } from '../ui/separator';
-import { ShoppingCart, Plus, Minus, X, Flame, Store, ListOrdered, Loader2, Utensils } from 'lucide-react';
 
 function POSInterface() {
     const [items, setItems] = useState([]);
@@ -79,7 +78,7 @@ function POSInterface() {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                                🍔 Order Food
+                                Order Food
                             </h1>
                             <p className="text-sm text-muted-foreground mt-1">Select items to add to your cart</p>
                         </div>
@@ -104,8 +103,8 @@ function POSInterface() {
                                                 onClick={() => addToCart(item)}
                                                 className="group bg-card rounded-xl border border-border/60 p-4 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all relative overflow-hidden flex flex-col items-center justify-center text-center gap-2"
                                             >
-                                                <div className="text-3xl transition-transform group-hover:scale-110">
-                                                    <Utensils className="w-8 h-8 text-muted-foreground/50 group-hover:text-primary/70" />
+                                                <div className="text-sm font-bold text-muted-foreground/50 group-hover:text-primary/70 transition-transform group-hover:scale-110">
+                                                    Item
                                                 </div>
                                                 <div className="w-full">
                                                     <p className="font-bold text-[13px] text-foreground leading-tight mb-1">{item.name}</p>
@@ -117,7 +116,7 @@ function POSInterface() {
                                                 
                                                 {predictions[item.id]?.predicted_label === 'High Demand' && (
                                                     <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg shadow-sm flex items-center gap-1">
-                                                        <Flame className="w-3 h-3" /> HOT
+                                                        HOT
                                                     </div>
                                                 )}
                                             </div>
@@ -132,11 +131,10 @@ function POSInterface() {
                                 <ScrollArea className="flex-1 -mx-2 px-2 pb-2">
                                     {loadingHistory ? (
                                         <div className="flex items-center justify-center h-full">
-                                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                                            <span className="text-sm font-bold">Loading...</span>
                                         </div>
                                     ) : orderHistory.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 opacity-60">
-                                            <ListOrdered className="w-12 h-12" />
                                             <p className="text-sm font-medium">No orders yet</p>
                                         </div>
                                     ) : (
@@ -178,14 +176,13 @@ function POSInterface() {
                         <Card className="flex flex-col w-full xl:w-[320px] h-full shrink-0 border-border/50 shadow-sm overflow-hidden">
                             <div className="bg-muted/30 px-5 py-4 border-b border-border/50">
                                 <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                                    <ShoppingCart className="w-4 h-4" /> My Cart
+                                    My Cart
                                 </h2>
                             </div>
 
                             <ScrollArea className="flex-1 p-5">
                                 {cart.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 opacity-60 min-h-[200px]">
-                                        <ShoppingCart className="w-12 h-12" />
                                         <p className="text-sm font-medium">Cart is empty</p>
                                     </div>
                                 ) : (
@@ -201,7 +198,7 @@ function POSInterface() {
                                                         onTrigger={() => adjustQuantity(item.id, -1)} 
                                                         className="w-6 h-6 flex items-center justify-center rounded-md bg-background shadow-sm hover:bg-muted text-foreground transition-colors"
                                                     >
-                                                        <Minus className="w-3 h-3" />
+                                                        <span className="text-xs font-bold">-</span>
                                                     </LongPressBtn>
                                                     <input 
                                                         type="number" 
@@ -228,14 +225,14 @@ function POSInterface() {
                                                         onTrigger={() => adjustQuantity(item.id, 1)} 
                                                         className="w-6 h-6 flex items-center justify-center rounded-md bg-background shadow-sm hover:bg-muted text-foreground transition-colors"
                                                     >
-                                                        <Plus className="w-3 h-3" />
+                                                        <span className="text-xs font-bold">+</span>
                                                     </LongPressBtn>
                                                 </div>
                                                 <button 
                                                     onClick={() => removeFromCart(item.id)} 
                                                     className="mt-1.5 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
                                                 >
-                                                    <X className="w-4 h-4" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Remove</span>
                                                 </button>
                                             </div>
                                         ))}
@@ -256,7 +253,7 @@ function POSInterface() {
                                 >
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
                                     {placingOrder ? (
-                                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                                        <>Processing...</>
                                     ) : (
                                         'Place Order'
                                     )}
@@ -278,7 +275,7 @@ function POSInterface() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            <Store className="w-6 h-6 text-primary" /> Orders Hub
+                            Orders Hub
                         </h1>
                         <p className="text-sm text-muted-foreground mt-1">Manage POS transactions and active order tickets</p>
                     </div>
@@ -287,10 +284,10 @@ function POSInterface() {
                 <Tabs defaultValue="pos" className="w-full flex-1 flex flex-col min-h-0">
                     <TabsList className="w-fit mb-4">
                         <TabsTrigger value="pos" className="font-bold flex items-center gap-2 px-6">
-                            <ShoppingCart className="w-4 h-4" /> New Order
+                            New Order
                         </TabsTrigger>
                         <TabsTrigger value="queue" className="font-bold flex items-center gap-2 px-6">
-                            <ListOrdered className="w-4 h-4" /> Order Queue
+                            Order Queue
                         </TabsTrigger>
                     </TabsList>
 
@@ -314,8 +311,8 @@ function POSInterface() {
                                                 onClick={() => addToCart(item)}
                                                 className="group bg-card rounded-xl border border-border/60 p-4 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all relative overflow-hidden flex flex-col items-center justify-center text-center gap-2"
                                             >
-                                                <div className="text-3xl transition-transform group-hover:scale-110">
-                                                    <Utensils className="w-8 h-8 text-muted-foreground/50 group-hover:text-primary/70" />
+                                                <div className="text-sm font-bold text-muted-foreground/50 group-hover:text-primary/70 transition-transform group-hover:scale-110">
+                                                    Item
                                                 </div>
                                                 <div className="w-full">
                                                     <p className="font-bold text-[13px] text-foreground leading-tight mb-1">{item.name}</p>
@@ -327,7 +324,7 @@ function POSInterface() {
                                                 
                                                 {predictions[item.id]?.predicted_label === 'High Demand' && (
                                                     <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg shadow-sm flex items-center gap-1">
-                                                        <Flame className="w-3 h-3" /> HOT
+                                                        HOT
                                                     </div>
                                                 )}
                                             </div>
@@ -340,14 +337,13 @@ function POSInterface() {
                             <Card className="flex flex-col h-full border-border/50 shadow-sm overflow-hidden">
                                 <div className="bg-muted/30 px-5 py-4 border-b border-border/50">
                                     <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                                        <ShoppingCart className="w-4 h-4" /> Current Cart
+                                        Current Cart
                                     </h2>
                                 </div>
 
                                 <ScrollArea className="flex-1 p-5">
                                     {cart.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 opacity-60 min-h-[200px]">
-                                            <ShoppingCart className="w-12 h-12" />
                                             <p className="text-sm font-medium">Cart is empty</p>
                                         </div>
                                     ) : (
@@ -363,7 +359,7 @@ function POSInterface() {
                                                             onTrigger={() => adjustQuantity(item.id, -1)} 
                                                             className="w-6 h-6 flex items-center justify-center rounded-md bg-background shadow-sm hover:bg-muted text-foreground transition-colors"
                                                         >
-                                                            <Minus className="w-3 h-3" />
+                                                            <span className="text-xs font-bold">-</span>
                                                         </LongPressBtn>
                                                         <input 
                                                             type="number" 
@@ -390,14 +386,14 @@ function POSInterface() {
                                                             onTrigger={() => adjustQuantity(item.id, 1)} 
                                                             className="w-6 h-6 flex items-center justify-center rounded-md bg-background shadow-sm hover:bg-muted text-foreground transition-colors"
                                                         >
-                                                            <Plus className="w-3 h-3" />
+                                                            <span className="text-xs font-bold">+</span>
                                                         </LongPressBtn>
                                                     </div>
                                                     <button 
                                                         onClick={() => removeFromCart(item.id)} 
                                                         className="mt-1.5 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
                                                     >
-                                                        <X className="w-4 h-4" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider">Remove</span>
                                                     </button>
                                                 </div>
                                             ))}
@@ -418,7 +414,7 @@ function POSInterface() {
                                     >
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
                                         {placingOrder ? (
-                                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                                            <>Processing...</>
                                         ) : (
                                             'Place Order'
                                         )}

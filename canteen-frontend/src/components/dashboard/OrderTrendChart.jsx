@@ -3,7 +3,6 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import api from '../../services/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
-import { TrendingUp } from 'lucide-react';
 
 export default function OrderTrendChart({ data: propData }) {
     const [data, setData] = useState([]);
@@ -78,7 +77,7 @@ export default function OrderTrendChart({ data: propData }) {
                         />
                         <Area
                             dataKey="total"
-                            type="natural"
+                            type="monotone"
                             fill="var(--color-total)"
                             fillOpacity={0.4}
                             stroke="var(--color-total)"
@@ -90,7 +89,7 @@ export default function OrderTrendChart({ data: propData }) {
                 <div className="flex w-full items-start gap-2 text-sm">
                     <div className="grid gap-2">
                         <div className="flex items-center gap-2 leading-none font-medium text-foreground">
-                            Order activity stable <TrendingUp className="h-4 w-4 text-primary" />
+                            Order activity stable
                         </div>
                         <div className="flex items-center gap-2 leading-none text-muted-foreground">
                             Last 30 Days

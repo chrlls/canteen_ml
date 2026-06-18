@@ -7,7 +7,7 @@ import api from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Button } from '../ui/button';
-import { Loader2, TrendingUp, Sparkles, AlertTriangle } from 'lucide-react';
+import { Input } from '../ui/input';
 
 export default function ReportsPage() {
     const [bestSelling, setBestSelling] = useState([]);
@@ -15,6 +15,10 @@ export default function ReportsPage() {
     const [metrics, setMetrics] = useState(null);
     const [predictions, setPredictions] = useState([]);
     const [isPredicting, setIsPredicting] = useState(false);
+    
+    // Sort and Search for Predictions
+    const [searchPredict, setSearchPredict] = useState('');
+    const [sortPredict, setSortPredict] = useState({ key: 'name', direction: 'asc' });
 
     useEffect(() => {
         api.get('/reports/best-selling').then(res => setBestSelling(res.data));
@@ -40,6 +44,38 @@ export default function ReportsPage() {
             setIsPredicting(false);
         }
     };
+
+    const handleSortPredict = (key) => {
+        let direction = 'asc';
+        if (sortPredict.key === key && sortPredict.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortPredict({ key, direction });
+    };
+
+    const filteredPredictions = predictions.filter(p =>
+        p.menu_item?.name.toLowerCase().includes(searchPredict.toLowerCase())
+    );
+
+    const sortedPredictions = [...filteredPredictions].sort((a, b) => {
+        const { key, direction } = sortPredict;
+        let aVal, bVal;
+        
+        if (key === 'name') {
+            aVal = a.menu_item?.name || '';
+            bVal = b.menu_item?.name || '';
+        } else if (key === 'label') {
+            aVal = a.predicted_label;
+            bVal = b.predicted_label;
+        } else if (key === 'confidence') {
+            aVal = a.confidence_score;
+            bVal = b.confidence_score;
+        }
+        
+        if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
 
     return (
         <Layout>
@@ -102,7 +138,7 @@ export default function ReportsPage() {
                     <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-border/50 bg-muted/10 pb-5">
                         <div className="space-y-1">
                             <CardTitle className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                                <Sparkles className="w-5 h-5" /> AI Demand Forecast (Next 7 Days)
+                                AI Demand Forecast (Next 7 Days)
                             </CardTitle>
                             <CardDescription className="max-w-xl">
                                 Predicts menu item demand using a Logistic Regression model trained on historical context.
@@ -114,9 +150,9 @@ export default function ReportsPage() {
                             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md"
                         >
                             {isPredicting ? (
-                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                                <>Generating...</>
                             ) : (
-                                <><TrendingUp className="w-4 h-4 mr-2" /> Generate Weekly Forecast</>
+                                <>Generate Weekly Forecast</>
                             )}
                         </Button>
                     </CardHeader>
@@ -151,24 +187,40 @@ export default function ReportsPage() {
                             </div>
                         )}
 
+                        <div className="mb-4">
+                            <Input
+                                type="text"
+                                placeholder="Search predicted items by name..."
+                                value={searchPredict}
+                                onChange={e => setSearchPredict(e.target.value)}
+                                className="max-w-sm h-10"
+                            />
+                        </div>
+
                         <div className="border border-border/50 rounded-xl overflow-hidden">
                             <Table>
                                 <TableHeader className="bg-muted/30">
                                     <TableRow>
-                                        <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Menu Item</TableHead>
-                                        <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Predicted Demand</TableHead>
-                                        <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Confidence</TableHead>
+                                        <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSortPredict('name')}>
+                                            Menu Item {sortPredict.key === 'name' ? (sortPredict.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        </TableHead>
+                                        <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSortPredict('label')}>
+                                            Predicted Demand {sortPredict.key === 'label' ? (sortPredict.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        </TableHead>
+                                        <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSortPredict('confidence')}>
+                                            Confidence {sortPredict.key === 'confidence' ? (sortPredict.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {predictions.map((p, i) => (
+                                    {sortedPredictions.map((p, i) => (
                                         <TableRow key={i} className="hover:bg-muted/30 transition-colors">
                                             <TableCell className="font-bold text-foreground text-sm">
                                                 {p.menu_item?.name}
                                             </TableCell>
                                             <TableCell>
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border backdrop-blur-md ${p.predicted_label === 'High Demand' ? 'bg-destructive/15 text-destructive border-destructive/20' : 'bg-success/15 text-success border-success/20'}`}>
-                                                    {p.predicted_label === 'High Demand' ? '🔥 High Demand' : '✅ Low Demand'}
+                                                    {p.predicted_label === 'High Demand' ? 'HIGH DEMAND' : 'LOW DEMAND'}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="font-mono text-xs text-muted-foreground">
@@ -176,11 +228,19 @@ export default function ReportsPage() {
                                             </TableCell>
                                         </TableRow>
                                     ))}
+                                    {sortedPredictions.length === 0 && predictions.length > 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-40 text-center">
+                                                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                                    <p className="font-medium text-sm">No predictions matched your search.</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                     {predictions.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={3} className="h-40 text-center">
                                                 <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                                    <AlertTriangle className="w-8 h-8 mb-2 opacity-50" />
                                                     <p className="font-medium text-sm">No predictions found for this week.</p>
                                                     <p className="text-xs mt-1">Click 'Generate Weekly Forecast' to run the model.</p>
                                                 </div>
