@@ -204,17 +204,17 @@ export default function InventoryTable() {
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('name')}>
-                                        Item {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        Item {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                     </TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('category')}>
-                                        Category {sortConfig.key === 'category' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        Category {sortConfig.key === 'category' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                     </TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('stock')}>
-                                        Stock {sortConfig.key === 'stock' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        Stock {sortConfig.key === 'stock' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                     </TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Status</TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('is_available')}>
-                                        Availability {sortConfig.key === 'is_available' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                        Availability {sortConfig.key === 'is_available' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                     </TableHead>
                                     <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground text-right">Action</TableHead>
                                 </TableRow>

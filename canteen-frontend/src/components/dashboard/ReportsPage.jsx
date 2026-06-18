@@ -15,7 +15,7 @@ export default function ReportsPage() {
     const [metrics, setMetrics] = useState(null);
     const [predictions, setPredictions] = useState([]);
     const [isPredicting, setIsPredicting] = useState(false);
-    
+
     // Sort and Search for Predictions
     const [searchPredict, setSearchPredict] = useState('');
     const [sortPredict, setSortPredict] = useState({ key: 'name', direction: 'asc' });
@@ -60,7 +60,7 @@ export default function ReportsPage() {
     const sortedPredictions = [...filteredPredictions].sort((a, b) => {
         const { key, direction } = sortPredict;
         let aVal, bVal;
-        
+
         if (key === 'name') {
             aVal = a.menu_item?.name || '';
             bVal = b.menu_item?.name || '';
@@ -71,7 +71,7 @@ export default function ReportsPage() {
             aVal = a.confidence_score;
             bVal = b.confidence_score;
         }
-        
+
         if (aVal < bVal) return direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return direction === 'asc' ? 1 : -1;
         return 0;
@@ -83,7 +83,7 @@ export default function ReportsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            📈 Sales Reports & Analytics
+                            Sales Reports & Analytics
                         </h1>
                         <p className="text-sm text-muted-foreground mt-1">View revenue, popular items, and AI demand forecasts</p>
                     </div>
@@ -97,7 +97,7 @@ export default function ReportsPage() {
 
                 <Card className="border-border/50 shadow-sm overflow-hidden">
                     <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-                        <CardTitle className="flex items-center gap-2">🏆 Best Selling Items</CardTitle>
+                        <CardTitle className="flex items-center gap-2">Best Selling Items</CardTitle>
                         <CardDescription>Top 10 items by quantity sold all time</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -179,7 +179,7 @@ export default function ReportsPage() {
                                 </div>
                             </div>
                         )}
-                        
+
                         {metrics && (
                             <div className="text-xs text-muted-foreground font-mono bg-muted/50 p-3 rounded-lg mb-6 border border-border/50">
                                 <div>Model last trained at: <span className="font-semibold text-foreground">{new Date(metrics.trained_at).toLocaleString()}</span></div>
@@ -202,13 +202,13 @@ export default function ReportsPage() {
                                 <TableHeader className="bg-muted/30">
                                     <TableRow>
                                         <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSortPredict('name')}>
-                                            Menu Item {sortPredict.key === 'name' ? (sortPredict.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                            Menu Item {sortPredict.key === 'name' ? (sortPredict.direction === 'asc' ? '↑' : '↓') : ''}
                                         </TableHead>
                                         <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSortPredict('label')}>
-                                            Predicted Demand {sortPredict.key === 'label' ? (sortPredict.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                            Predicted Demand {sortPredict.key === 'label' ? (sortPredict.direction === 'asc' ? '↑' : '↓') : ''}
                                         </TableHead>
                                         <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSortPredict('confidence')}>
-                                            Confidence {sortPredict.key === 'confidence' ? (sortPredict.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                            Confidence {sortPredict.key === 'confidence' ? (sortPredict.direction === 'asc' ? '↑' : '↓') : ''}
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>

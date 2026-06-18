@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { cn } from '../../lib/utils';
+import { TrendingUp } from 'lucide-react';
 
 export default function Sidebar() {
     const { user, logout } = useAuth();
@@ -37,21 +38,23 @@ export default function Sidebar() {
         { to: '/orders', label: 'Place Order' },
         { to: '/history', label: 'Purchase History' },
     ];
- 
+
     const links = user?.role === 'admin' ? adminLinks
         : user?.role === 'cashier' ? cashierLinks
-        : customerLinks;
+            : customerLinks;
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full w-64 bg-slate-950 text-slate-50 font-sans border-r border-slate-800 shadow-xl">
             {/* Brand Header */}
             <div className="px-6 py-6 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 font-bold text-xs">
-                        C
+                    <div className="w-10 h-10 rounded-xl bg-foreground flex items-center justify-center shrink-0 shadow-lg shadow-black/20">
+                        <TrendingUp className="text-warning" size={20} strokeWidth={2} />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold text-white tracking-tight">Canteen</h1>
+                        <h1 className="text-lg font-bold text-white tracking-tight">
+                            Can<span className="text-primary">Predict</span>
+                        </h1>
                         <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">
                             {user?.role} Panel
                         </p>
@@ -61,9 +64,6 @@ export default function Sidebar() {
 
             {/* Navigation Links */}
             <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-                <div className="px-3 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Navigation
-                </div>
                 {links.map((link) => {
                     const isActive = location.pathname === link.to;
                     return (
@@ -73,8 +73,8 @@ export default function Sidebar() {
                             onClick={() => setMobileOpen(false)}
                             className={cn(
                                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group relative",
-                                isActive 
-                                    ? "bg-primary/15 text-white" 
+                                isActive
+                                    ? "bg-primary/15 text-white"
                                     : "text-slate-400 hover:bg-white/5 hover:text-white"
                             )}
                         >
@@ -102,7 +102,7 @@ export default function Sidebar() {
                         </div>
                     </div>
                 </div>
-                <button 
+                <button
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
                 >

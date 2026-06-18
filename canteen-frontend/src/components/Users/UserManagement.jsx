@@ -146,13 +146,13 @@ export default function UserManagement() {
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('name')}>
-                    User {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                    User {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                   </TableHead>
                   <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('role')}>
-                    Role {sortConfig.key === 'role' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                    Role {sortConfig.key === 'role' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                   </TableHead>
                   <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('created_at')}>
-                    Joined {sortConfig.key === 'created_at' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                    Joined {sortConfig.key === 'created_at' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                   </TableHead>
                   <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground text-right">Action</TableHead>
                 </TableRow>

@@ -40,13 +40,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
             <p className="text-sm text-muted-foreground mt-1">Real-time summary of your canteen's performance</p>
           </div>
-          <div className="flex items-center gap-2 bg-background border border-border px-3 py-1.5 rounded-full shadow-sm text-xs font-semibold text-muted-foreground whitespace-nowrap">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-            </span>
-            Live Data
-          </div>
+
         </div>
 
         {/* Section Label */}

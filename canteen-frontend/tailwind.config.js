@@ -57,6 +57,9 @@ module.exports = {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        panel: {
+          DEFAULT: "hsl(var(--panel))",
+        },
       },
       borderRadius: {
         lg: `var(--radius)`,

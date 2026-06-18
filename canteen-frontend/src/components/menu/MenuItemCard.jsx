@@ -49,13 +49,13 @@ export default function MenuItemCard({ item, onEdit, onDelete, onAddToCart, onTo
         </div>
         
         {/* Availability Badge */}
-        <div className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border backdrop-blur-md ${available ? 'bg-success/15 text-success border-success/20' : 'bg-destructive/15 text-destructive border-destructive/20'}`}>
+        <div className={`absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border backdrop-blur-md ${available ? 'bg-success/15 text-success border-success/20' : 'bg-destructive/15 text-destructive border-destructive/20'}`}>
           {available ? '● Available' : '○ Unavailable'}
         </div>
 
         {/* High Demand Badge */}
         {prediction?.predicted_label === 'High Demand' && (
-          <div className="absolute bottom-2 left-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-md text-[10px] font-extrabold flex items-center gap-1 shadow-sm z-10 tracking-widest uppercase">
+          <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg shadow-sm flex items-center gap-1 z-10">
             HOT
           </div>
         )}

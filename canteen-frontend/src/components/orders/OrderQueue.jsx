@@ -145,17 +145,17 @@ export default function OrderQueue() {
                         <TableHeader className="bg-muted/30">
                             <TableRow>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('order_number')}>
-                                    Order {sortConfig.key === 'order_number' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    Order {sortConfig.key === 'order_number' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                 </TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('user')}>
-                                    Customer {sortConfig.key === 'user' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    Customer {sortConfig.key === 'user' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                 </TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Items</TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('total_amount')}>
-                                    Total {sortConfig.key === 'total_amount' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    Total {sortConfig.key === 'total_amount' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                 </TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => handleSort('status_priority')}>
-                                    Status {sortConfig.key === 'status_priority' ? (sortConfig.direction === 'asc' ? '(Asc)' : '(Desc)') : ''}
+                                    Status {sortConfig.key === 'status_priority' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                                 </TableHead>
                                 <TableHead className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">Action</TableHead>
                             </TableRow>

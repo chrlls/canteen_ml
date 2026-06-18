@@ -40,6 +40,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 5.6 78% 57%;
 
+    --panel: 222.2 84% 4.9%;
+
     --radius: 0.75rem;
   }
 
@@ -93,6 +95,11 @@
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+@keyframes grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
 }
 
 @keyframes shimBarAnim {
