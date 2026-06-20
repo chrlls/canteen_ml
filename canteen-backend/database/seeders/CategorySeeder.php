@@ -5,7 +5,7 @@ use App\Models\Category;
 
 class CategorySeeder extends Seeder {
     public function run() {
-        $categories = ['Meals', 'Snacks', 'Beverages', 'Desserts', 'Combos'];
+        $categories = ['Main Meal', 'Snack', 'Beverage', 'Dessert', 'Combos'];
         foreach ($categories as $cat) {
             Category::create(['name' => $cat]);
         }

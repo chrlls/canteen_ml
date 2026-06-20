@@ -35,6 +35,7 @@ class OrderController extends Controller
             'items'                  => 'required|array',
             'items.*.menu_item_id'   => 'required|exists:menu_items,id',
             'items.*.quantity'       => 'required|integer|min:1',
+            'order_type'             => 'required|in:Take Away,Dine In',
         ]);
 
         $total = 0;
@@ -48,6 +49,7 @@ class OrderController extends Controller
             'order_number' => 'ORD-' . strtoupper(uniqid()),
             'total_amount' => $total,
             'status'       => 'Pending', // ✅ Capitalized
+            'order_type'   => $request->order_type,
         ]);
 
         foreach ($request->items as $item) {

@@ -33,7 +33,12 @@ class ReportController extends Controller
 
     public function bestSelling()
     {
+        $now = now();
         $items = OrderItem::selectRaw('menu_item_id, SUM(quantity) as total_qty, SUM(price * quantity) as total_revenue')
+            ->whereHas('order', function($q) use ($now) {
+                $q->where('created_at', '>=', $now->copy()->subDays(7))
+                  ->where('status', 'Completed');
+            })
             ->with('menuItem')
             ->groupBy('menu_item_id')
             ->orderBy('total_qty', 'desc')

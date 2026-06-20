@@ -11,7 +11,7 @@ class OrderSeeder extends Seeder
     public function run()
     {
         $statuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
-        $userIds  = [1, 4, 5]; // your actual user IDs
+        $userIds  = [1, 2, 3]; // your actual user IDs
 
         for ($i = 1; $i <= 200; $i++) {
             $order = Order::create([

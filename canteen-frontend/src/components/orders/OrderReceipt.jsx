@@ -10,20 +10,63 @@ export default function OrderReceipt({ order, onClose }) {
   const items = order.order_items || order.items || [];
   const total = order.total_amount || items.reduce((s, i) => s + i.price * i.quantity, 0);
 
+  const statusConfig = {
+      Pending: {
+          title: 'Order Placed',
+          desc: 'has been placed and is waiting to be cooked.',
+          icon: '⏳',
+          colorClass: 'bg-amber-500/15 text-amber-500 ring-amber-500/5',
+          pill1: 'WAITING TO COOK',
+          pill2: 'IN QUEUE'
+      },
+      Preparing: {
+          title: 'Order Preparing',
+          desc: 'is currently being prepared in the kitchen.',
+          icon: '🍳',
+          colorClass: 'bg-blue-500/15 text-blue-500 ring-blue-500/5',
+          pill1: 'BEING PREPARED',
+          pill2: 'EST. 10-15 MIN'
+      },
+      Ready: {
+          title: 'Order Ready',
+          desc: 'is ready for pickup or serving.',
+          icon: '🔔',
+          colorClass: 'bg-success/15 text-success ring-success/5',
+          pill1: 'READY FOR PICKUP',
+          pill2: 'AT COUNTER'
+      },
+      Completed: {
+          title: 'Order Completed',
+          desc: 'has been successfully completed.',
+          icon: '✓',
+          colorClass: 'bg-success/15 text-success ring-success/5',
+          pill1: 'COMPLETED',
+          pill2: 'THANK YOU'
+      },
+      Cancelled: {
+          title: 'Order Cancelled',
+          desc: 'has been cancelled.',
+          icon: '✕',
+          colorClass: 'bg-destructive/15 text-destructive ring-destructive/5',
+          pill1: 'CANCELLED',
+          pill2: 'REFUNDED'
+      }
+  };
+
+  const status = order.status || 'Pending';
+  const config = statusConfig[status] || statusConfig.Pending;
+
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border-border/50 shadow-xl">
-        {/* Header Ribbon */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/80 to-primary animate-pulse" />
-        
-        <div className="p-6 pb-2">
+        <div className="p-6 pb-2 pt-8">
             <div className="flex flex-col items-center text-center space-y-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center mb-1 ring-4 ring-success/5 font-extrabold text-success">
-                    ✓
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-1 ring-4 font-extrabold ${config.colorClass}`}>
+                    {config.icon}
                 </div>
-                <DialogTitle className="text-2xl font-extrabold tracking-tight text-foreground">Order Placed Successfully</DialogTitle>
+                <DialogTitle className="text-2xl font-extrabold tracking-tight text-foreground">{config.title}</DialogTitle>
                 <DialogDescription className="text-sm font-medium text-muted-foreground">
-                    Order <span className="text-foreground font-bold">#{order.order_number || order.id}</span> has been confirmed.
+                    Order <span className="text-foreground font-bold">#{order.order_number || order.id}</span> {config.desc}
                 </DialogDescription>
             </div>
 
@@ -54,12 +97,14 @@ export default function OrderReceipt({ order, onClose }) {
 
         <div className="bg-muted/30 p-6 pt-4 border-t border-border/50 flex flex-col gap-4">
             <div className="flex justify-center gap-2">
-                <div className="inline-flex items-center gap-1.5 bg-background border border-border/60 rounded-full px-3 py-1.5 text-[11px] font-bold text-muted-foreground shadow-sm">
-                    BEING PREPARED
+                <div className="inline-flex items-center gap-1.5 bg-background border border-border/60 rounded-full px-3 py-1.5 text-[11px] font-bold text-muted-foreground shadow-sm uppercase tracking-wider">
+                    {config.pill1}
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-background border border-border/60 rounded-full px-3 py-1.5 text-[11px] font-bold text-muted-foreground shadow-sm">
-                    EST. 10-15 MIN
-                </div>
+                {config.pill2 && (
+                    <div className="inline-flex items-center gap-1.5 bg-background border border-border/60 rounded-full px-3 py-1.5 text-[11px] font-bold text-muted-foreground shadow-sm uppercase tracking-wider">
+                        {config.pill2}
+                    </div>
+                )}
             </div>
             <Button onClick={onClose} className="w-full h-11 text-base font-bold shadow-md">
                 Done

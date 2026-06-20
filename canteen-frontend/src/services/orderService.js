@@ -10,7 +10,7 @@ const orderService = {
      * Place a new order
      * @param {Array} items - [{ menu_item_id, quantity }]
      */
-    placeOrder: (items) => api.post('/orders', { items }),
+    placeOrder: (payload) => api.post('/orders', payload),
 
     /**
      * Update the status of an order (admin/cashier)

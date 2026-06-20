@@ -98,7 +98,7 @@ export default function ReportsPage() {
                 <Card className="border-border/50 shadow-sm overflow-hidden">
                     <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
                         <CardTitle className="flex items-center gap-2">Best Selling Items</CardTitle>
-                        <CardDescription>Top 10 items by quantity sold all time</CardDescription>
+                        <CardDescription>Top 10 items by quantity sold in the last 7 days</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="overflow-x-auto">

@@ -7,7 +7,6 @@ use App\Models\DemandPrediction;
 use App\Models\MenuItem;
 use App\Models\ModelRun;
 use App\Services\FlaskPredictionService;
-use App\Support\AcademicCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -26,13 +25,13 @@ class PredictionController extends Controller
         try {
             $now = Carbon::now();
             $weekStart = $now->copy()->startOfWeek();
-            $weekendDaysCount = 2; // Assuming a full week
 
-            $isBreakWeek = AcademicCalendar::isBreakWeek($now);
-            $isExamWeek = AcademicCalendar::isExamWeek($now);
-            $isEnrollmentWeek = AcademicCalendar::isEnrollmentWeek($now);
-
-            $menuItems = MenuItem::with('category')->get();
+            // Fetch menu items, excluding 'Combos' category
+            $menuItems = \App\Models\MenuItem::with('category')
+                ->whereHas('category', function($q) {
+                    $q->where('name', '!=', 'Combos');
+                })
+                ->get();
             $itemsPayload = [];
             $itemMap = [];
 
@@ -42,7 +41,8 @@ class PredictionController extends Controller
                 // Calculate real-time quantity sold over the last 7 days
                 $total_units_sold = \App\Models\OrderItem::where('menu_item_id', $item->id)
                     ->whereHas('order', function($q) use ($now) {
-                        $q->where('created_at', '>=', $now->copy()->subDays(7));
+                        $q->where('created_at', '>=', $now->copy()->subDays(7))
+                          ->where('status', 'Completed');
                     })->sum('quantity');
                 
                 $avg_daily_units = round($total_units_sold / 7, 2);
@@ -90,9 +90,6 @@ class PredictionController extends Controller
                         [
                             'predicted_label' => $prediction['predicted_label'],
                             'confidence_score' => $prediction['confidence'],
-                            'is_break_week' => $isBreakWeek,
-                            'is_exam_week' => $isExamWeek,
-                            'is_enrollment_week' => $isEnrollmentWeek,
                         ]
                     );
                     $updatedCount++;
@@ -114,7 +111,7 @@ class PredictionController extends Controller
         }
     }
 
-    public function syncMetrics()
+    public function syncMetrics(Request $request)
     {
         try {
             $metrics = $this->flaskService->getMetrics();

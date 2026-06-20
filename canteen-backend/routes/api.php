@@ -24,44 +24,57 @@ Route::middleware('auth:sanctum')->group(function () {
     // Menu
     Route::get('/menu', [MenuController::class, 'index']);
     Route::get('/menu/{id}', [MenuController::class, 'show']);
-    Route::post('/menu', [MenuController::class, 'store']);
-    Route::put('/menu/{id}', [MenuController::class, 'update']);
-    Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
-    Route::patch('/menu/{id}/toggle', [MenuController::class, 'toggleAvailability']);
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/menu', [MenuController::class, 'store']);
+        Route::put('/menu/{id}', [MenuController::class, 'update']);
+        Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
+        Route::patch('/menu/{id}/toggle', [MenuController::class, 'toggleAvailability']);
+    });
 
     // Categories
     Route::get('/categories', [CategoryController::class, 'index']);
-    Route::post('/categories', [CategoryController::class, 'store']);
-    Route::put('/categories/{id}', [CategoryController::class, 'update']);
-    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::put('/categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    });
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
-    Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::middleware('role:admin,cashier')->group(function () {
+        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    });
 
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index']);
     Route::get('/inventory/low-stock', [InventoryController::class, 'lowStock']);
     Route::get('/inventory/logs', [InventoryController::class, 'logs']);
-    Route::patch('/inventory/{id}/adjust', [InventoryController::class, 'adjust']);
+    Route::middleware('role:admin,cashier')->group(function () {
+        Route::patch('/inventory/{id}/adjust', [InventoryController::class, 'adjust']);
+    });
 
-    // Reports ✅ Fixed: 'salesSummary' → 'summary'
-    Route::get('/reports/summary', [ReportController::class, 'summary']);
-    Route::get('/reports/daily', [ReportController::class, 'dailySales']);
-    Route::get('/reports/best-selling', [ReportController::class, 'bestSelling']);
-    Route::get('/reports/categories', [ReportController::class, 'categoryBreakdown']);
+    // Reports (Admin only)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/reports/summary', [ReportController::class, 'summary']);
+        Route::get('/reports/daily', [ReportController::class, 'dailySales']);
+        Route::get('/reports/best-selling', [ReportController::class, 'bestSelling']);
+        Route::get('/reports/categories', [ReportController::class, 'categoryBreakdown']);
+    });
 
     // User Management (Admin only)
-    Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    });
 
     // ML Predictions
-    // Admin/Cashier only, ideally protected by role middleware but keeping simple as requested inside sanctum
-    Route::post('/predict/generate', [PredictionController::class, 'generateWeeklyPredictions']);
-    Route::post('/predict/metrics/sync', [PredictionController::class, 'syncMetrics']);
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/predict/generate', [PredictionController::class, 'generateWeeklyPredictions']);
+        Route::post('/predict/metrics/sync', [PredictionController::class, 'syncMetrics']);
+    });
     Route::get('/predict', [PredictionController::class, 'latestPredictions']);
     Route::get('/predict/metrics/latest', [PredictionController::class, 'latestMetrics']);
 });

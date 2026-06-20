@@ -83,7 +83,8 @@ export default function OrderQueue() {
 
     const filteredOrders = orders.filter(o => 
         o.order_number?.toLowerCase().includes(search.toLowerCase()) || 
-        o.user?.name?.toLowerCase().includes(search.toLowerCase())
+        o.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        o.order_items?.some(item => item.menu_item?.name?.toLowerCase().includes(search.toLowerCase()))
     );
 
     const sortedOrders = [...filteredOrders].sort((a, b) => {
