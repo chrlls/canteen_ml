@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, CartesianGrid, Cell } from 'recharts';
 import api from '../../services/api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 
 export default function SalesChart({ data: propData }) {
@@ -10,7 +10,7 @@ export default function SalesChart({ data: propData }) {
     const chartConfig = {
         total: {
             label: "Revenue",
-            color: "#E64D3D",
+            color: "#f97316",
         },
     };
 
@@ -50,34 +50,30 @@ export default function SalesChart({ data: propData }) {
     }, [propData]);
 
     return (
-        <Card className="h-full border-border/50 shadow-sm flex flex-col">
-            <CardHeader>
-                <CardTitle>Daily Sales Revenue</CardTitle>
-                <CardDescription>Last 7 Days</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-                <ChartContainer config={chartConfig} className="w-full h-full max-h-[250px]">
-                    <BarChart accessibilityLayer data={data}>
-                        <CartesianGrid vertical={false} />
+        <Card className="h-full border border-gray-100 rounded-2xl shadow-sm flex flex-col p-6 pb-2">
+            <div className="mb-6">
+                <h2 className="text-[17px] font-bold text-slate-800 tracking-tight">Daily sales revenue</h2>
+                <p className="text-[13px] text-gray-400 mt-0.5">Last 7 days</p>
+            </div>
+            <CardContent className="flex-1 p-0">
+                <ChartContainer config={chartConfig} className="w-full h-full max-h-[220px]">
+                    <BarChart accessibilityLayer data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                         <XAxis
                             dataKey="date"
                             tickLine={false}
                             tickMargin={10}
                             axisLine={false}
+                            tick={{ fill: '#9ca3af', fontSize: 11, fontWeight: 500 }}
                         />
-                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                        <Bar dataKey="total" fill="var(--color-total)" radius={8} />
+                        <ChartTooltip cursor={{ fill: 'transparent' }} content={<ChartTooltipContent hideLabel />} />
+                        <Bar dataKey="total" radius={[6, 6, 6, 6]} barSize={40}>
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={index === data.length - 1 ? "#f97316" : "#fed7aa"} />
+                            ))}
+                        </Bar>
                     </BarChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm border-t border-border/50 pt-4 mt-auto">
-                <div className="flex gap-2 leading-none font-medium text-foreground">
-                    Sales are active
-                </div>
-                <div className="leading-none text-muted-foreground">
-                    Showing daily revenue for the last 7 days
-                </div>
-            </CardFooter>
         </Card>
     );
 }

@@ -50,26 +50,25 @@ export default function OrderTrendChart({ data: propData }) {
     }, [propData]);
 
     return (
-        <Card className="h-full border-border/50 shadow-sm flex flex-col">
-            <CardHeader>
-                <CardTitle>Order Trend</CardTitle>
-                <CardDescription>
-                    Showing total revenue for the last 30 days
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-                <ChartContainer config={chartConfig} className="w-full h-full max-h-[250px]">
+        <Card className="h-full border border-gray-100 rounded-2xl shadow-sm flex flex-col p-6 pb-2">
+            <div className="mb-6">
+                <h2 className="text-[17px] font-bold text-slate-800 tracking-tight">Order Trend</h2>
+                <p className="text-[13px] text-gray-400 mt-0.5">Showing total revenue for the last 30 days</p>
+            </div>
+            <CardContent className="flex-1 p-0 flex flex-col justify-end">
+                <ChartContainer config={chartConfig} className="w-full h-full max-h-[220px]">
                     <AreaChart
                         accessibilityLayer
                         data={data}
                         margin={{ left: 12, right: 12 }}
                     >
-                        <CartesianGrid vertical={false} />
+                        <CartesianGrid vertical={false} stroke="#f3f4f6" />
                         <XAxis
                             dataKey="date"
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
+                            tick={{ fill: '#9ca3af', fontSize: 11, fontWeight: 500 }}
                         />
                         <ChartTooltip
                             cursor={false}
@@ -81,22 +80,11 @@ export default function OrderTrendChart({ data: propData }) {
                             fill="var(--color-total)"
                             fillOpacity={0.4}
                             stroke="var(--color-total)"
+                            strokeWidth={1}
                         />
                     </AreaChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="border-t border-border/50 pt-4 mt-auto">
-                <div className="flex w-full items-start gap-2 text-sm">
-                    <div className="grid gap-2">
-                        <div className="flex items-center gap-2 leading-none font-medium text-foreground">
-                            Order activity stable
-                        </div>
-                        <div className="flex items-center gap-2 leading-none text-muted-foreground">
-                            Last 30 Days
-                        </div>
-                    </div>
-                </div>
-            </CardFooter>
         </Card>
     );
 }

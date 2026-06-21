@@ -148,7 +148,7 @@ class PredictionController extends Controller
             return response()->json([]);
         }
 
-        $predictions = DemandPrediction::with('menuItem')->where('week_start', $latestWeek)->get();
+        $predictions = DemandPrediction::with('menuItem.category')->where('week_start', $latestWeek)->get();
         return response()->json($predictions);
     }
 
