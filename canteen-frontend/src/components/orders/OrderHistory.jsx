@@ -1,23 +1,42 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Layout from '../common/Layout';
 import orderService from '../../services/orderService';
 import usePolling from '../../hooks/usePolling';
 import ORDER_STATUS from '../../constants/orderStatus';
-
+import { ChevronDown, ChevronUp, PackageOpen } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export default function OrderHistory() {
-  const [orders, setOrders]     = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [filter, setFilter]     = useState('all');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState(null);
-  const [show, setShow]         = useState(false);
+
+  const { notify } = useToast();
+  const prevOrdersRef = useRef([]);
 
   const fetchOrders = useCallback(() => {
     orderService.getOrders()
-      .then(r => setOrders(r.data))
+      .then(res => {
+          const newOrders = res.data;
+          if (prevOrdersRef.current.length > 0) {
+              newOrders.forEach(newOrder => {
+                  const oldOrder = prevOrdersRef.current.find(o => o.id === newOrder.id);
+                  if (oldOrder && oldOrder.status !== newOrder.status) {
+                      if (newOrder.status === 'Preparing') {
+                          notify(`Order #${newOrder.order_number} is now being processed!`, 'info');
+                      } else if (newOrder.status === 'Ready') {
+                          notify(`Order #${newOrder.order_number} is ready for pick up!`, 'success');
+                      }
+                  }
+              });
+          }
+          prevOrdersRef.current = newOrders;
+          setOrders(newOrders);
+      })
       .catch(console.error)
-      .finally(() => { setLoading(false); setTimeout(() => setShow(true), 60); });
-  }, []);
+      .finally(() => setLoading(false));
+  }, [notify]);
 
   usePolling(fetchOrders, 5000);
 
@@ -25,116 +44,31 @@ export default function OrderHistory() {
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
   return (
-    <Layout>
-      <style>{`
-        .oh { font-family:'Poppins',sans-serif; }
-
-        .oh-header { margin-bottom: 1.5rem; }
-        .oh-title { font-size:1.45rem;font-weight:800;color:#1a1a2e;margin-bottom:2px;letter-spacing:-0.3px; }
-        .oh-sub   { font-size:0.8rem;color:#aaa; }
-
-        .oh-live {
-          display:inline-flex;align-items:center;gap:5px;
-          background:#f8f8f8;border:1px solid #ebebeb;
-          border-radius:20px;padding:0.25rem 0.65rem;
-          font-size:0.65rem;font-weight:600;color:#888;
-          margin-left:0.75rem;vertical-align:middle;
-        }
-        .oh-live-dot {
-          width:6px;height:6px;border-radius:50%;background:#27ae60;
-          animation:ohPulse 2s infinite;display:inline-block;
-        }
-        @keyframes ohPulse { 0%,100%{opacity:1;transform:scale(1)}
-
-        .oh-tabs { display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.25rem; }
-        .oh-tab {
-          padding:0.35rem 1rem;border-radius:20px;border:1.5px solid #e8e8e8;
-          background:#fff;font-family:'Poppins',sans-serif;font-size:0.78rem;
-          font-weight:500;color:#888;cursor:pointer;transition:all 0.18s;
-        }
-        .oh-tab:hover { border-color:#e74c3c;color:#e74c3c; }
-        .oh-tab.active {
-          background:linear-gradient(135deg,#e74c3c,#c0392b);
-          border-color:transparent;color:#fff;
-          box-shadow:0 3px 10px rgba(231,76,60,0.3);
-        }
-
-        .oh-list { display:flex;flex-direction:column;gap:0.75rem; }
-
-        .oh-card {
-          background:#fff;border-radius:16px;border:1px solid #f0f0f0;
-          box-shadow:0 2px 10px rgba(0,0,0,0.055);overflow:hidden;
-          position:relative;
-          opacity:0;transform:translateY(14px);
-          transition:opacity 0.45s ease,transform 0.45s ease,box-shadow 0.2s;
-        }
-        .oh-card::before {
-          content:'';position:absolute;top:0;left:0;right:0;height:3px;
-          background:linear-gradient(90deg,#e74c3c,#ff8a80,#e74c3c);
-          background-size:200% 100%;animation:ohShim 3s linear infinite;
-        }
-        @keyframes ohShim { 0%{background-position:200% 0}
-        .oh-card.show { opacity:1;transform:translateY(0); }
-        .oh-card:hover { box-shadow:0 6px 20px rgba(0,0,0,0.09); }
-
-        .oh-card-header {
-          display:flex;align-items:center;gap:1rem;
-          padding:1rem 1.25rem;cursor:pointer;transition:background 0.15s;
-        }
-        .oh-card-header:hover { background:#fafafa; }
-
-        .oh-order-num { font-size:0.9rem;font-weight:800;color:#1a1a2e; }
-        .oh-date      { font-size:0.72rem;color:#bbb;margin-top:2px; }
-        .oh-badge     { padding:0.22rem 0.7rem;border-radius:20px;font-size:0.68rem;font-weight:700;white-space:nowrap; }
-        .oh-total     { font-size:1.05rem;font-weight:800;color:#e74c3c;margin-left:auto;white-space:nowrap; }
-        .oh-chevron   { color:#bbb;font-size:0.75rem;transition:transform 0.2s;margin-left:6px;flex-shrink:0; }
-        .oh-chevron.open { transform:rotate(180deg); }
-
-        .oh-body { padding:0 1.25rem 1.1rem;border-top:1px solid #f5f5f5; }
-        .oh-items-title {
-          font-size:0.7rem;font-weight:700;color:#bbb;
-          text-transform:uppercase;letter-spacing:0.08em;margin:0.85rem 0 0.5rem;
-        }
-        .oh-item-row {
-          display:flex;justify-content:space-between;
-          font-size:0.82rem;color:#555;padding:0.3rem 0;
-          border-bottom:1px solid #f7f7f7;
-        }
-        .oh-item-row:last-child { border:none; }
-
-        .oh-empty {
-          background:#fff;border-radius:16px;border:1px solid #f0f0f0;
-          box-shadow:0 2px 10px rgba(0,0,0,0.055);
-          text-align:center;padding:3rem;color:#bbb;font-size:0.9rem;
-        }
-        .oh-empty-icon { font-size:2.5rem;margin-bottom:0.5rem; }
-
-        .oh-shimmer {
-          background:linear-gradient(90deg,#f0f0f0 25%,#fafafa 50%,#f0f0f0 75%);
-          background-size:200% 100%;animation:shimmer 1.4s infinite;
-          border-radius:16px;height:68px;
-        }
-      `}</style>
-
-      <div className="oh">
+    <Layout hideNavbar={true}>
+      <div className="w-full max-w-5xl mx-auto py-6 flex flex-col gap-6">
+        
         {/* Header */}
-        <div className="oh-header">
-          <div className="oh-title">
-            📋 Order History
-            <span className="oh-live">
-              <span className="oh-live-dot" /> Live
-            </span>
+        <div>
+          <div className="flex items-center gap-3 mt-2 mb-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-[#1e293b]">
+              Purchase History
+            </h1>
+
           </div>
-          <div className="oh-sub">{filtered.length} orders found</div>
+          <p className="text-[15px] font-medium text-slate-500/90 tracking-wide">{filtered.length} orders found</p>
         </div>
 
         {/* Tabs */}
-        <div className="oh-tabs">
+        <div className="flex flex-wrap gap-2">
           {TABS.map(t => (
             <button
               key={t}
-              className={`oh-tab${filter === t ? ' active' : ''}`}
               onClick={() => setFilter(t)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                filter === t
+                  ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                  : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+              }`}
             >
               {t === 'all' ? 'All Orders' : t}
             </button>
@@ -143,60 +77,90 @@ export default function OrderHistory() {
 
         {/* List */}
         {loading ? (
-          <div className="oh-list">
-            {[1,2,3,4].map(i => <div key={i} className="oh-shimmer" />)}
+          <div className="flex flex-col gap-4">
+             {[1,2,3,4].map(i => (
+                <div key={i} className="h-24 w-full bg-muted/40 rounded-2xl animate-pulse border border-border" />
+             ))}
           </div>
         ) : (
-          <div className="oh-list">
+          <div className="flex flex-col gap-4">
             {filtered.length === 0 ? (
-              <div className="oh-empty">
-                <div className="oh-empty-icon">📭</div>
-                <p style={{ fontWeight: 600 }}>No orders found.</p>
-                <p style={{ fontSize: '0.78rem', marginTop: 4 }}>
-                  {filter === 'all' ? 'Place your first order from Browse Menu!' : `No ${filter} orders yet.`}
-                </p>
+              <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl border border-border shadow-sm text-muted-foreground gap-4">
+                <PackageOpen size={48} className="opacity-20" />
+                <div className="text-center">
+                  <p className="font-bold text-foreground">No orders found.</p>
+                  <p className="text-sm mt-1">{filter === 'all' ? 'Place your first order from Order Food!' : `No ${filter} orders yet.`}</p>
+                </div>
               </div>
             ) : (
-              filtered.map((order, idx) => {
+              filtered.map((order) => {
                 const s = ORDER_STATUS[order.status] || ORDER_STATUS.Pending;
                 const isOpen = expanded === order.id;
+
                 return (
                   <div
                     key={order.id}
-                    className={`oh-card${show ? ' show' : ''}`}
-                    style={{ transitionDelay: `${Math.min(idx * 0.05, 0.4)}s` }}
+                    className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300"
                   >
-                    <div className="oh-card-header" onClick={() => setExpanded(isOpen ? null : order.id)}>
-                      <div>
-                        <div className="oh-order-num">#{order.order_number}</div>
-                        <div className="oh-date">
-                          {new Date(order.created_at).toLocaleDateString('en-PH', {
-                            month: 'short', day: 'numeric', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit'
-                          })}
+                    <div 
+                      className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors"
+                      onClick={() => setExpanded(isOpen ? null : order.id)}
+                    >
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                             <span className="text-lg font-bold text-primary">#{order.id}</span>
+                         </div>
+                         <div>
+                            <div className="font-extrabold text-foreground tracking-tight">{order.order_number}</div>
+                            <div className="text-xs text-muted-foreground font-medium mt-0.5">
+                              {new Date(order.created_at).toLocaleDateString('en-PH', {
+                                month: 'short', day: 'numeric', year: 'numeric',
+                                hour: '2-digit', minute: '2-digit'
+                              })}
+                            </div>
+                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-1/2">
+                        <span 
+                            className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border"
+                            style={{ backgroundColor: s.bg, color: s.color, borderColor: s.border }}
+                        >
+                          {s.label || order.status}
+                        </span>
+                        
+                        <div className="flex items-center gap-4">
+                            <span className="font-extrabold text-lg text-primary whitespace-nowrap">
+                              ₱{Number(order.total_amount).toFixed(2)}
+                            </span>
+                            <div className="text-muted-foreground">
+                               {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            </div>
                         </div>
                       </div>
-                      <span className="oh-badge" style={{ background: s.bg, color: s.color }}>
-                        {s.label}
-                      </span>
-                      <span className="oh-total">₱{Number(order.total_amount).toFixed(2)}</span>
-                      <span className={`oh-chevron${isOpen ? ' open' : ''}`}>▼</span>
                     </div>
 
                     {isOpen && (
-                      <div className="oh-body">
-                        <div className="oh-items-title">Items Ordered</div>
-                        {/* ✅ Fixed: order.order_items not order.items */}
-                        {order.order_items?.map((item, i) => (
-                          <div key={i} className="oh-item-row">
-                            <span>{item.menu_item?.name || 'Item'} × {item.quantity}</span>
-                            <span style={{ fontWeight: 600, color: '#e74c3c' }}>
-                              ₱{(item.price * item.quantity).toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                        <div style={{ display:'flex', justifyContent:'flex-end', marginTop:'0.6rem', fontWeight:700, color:'#1a1a2e' }}>
-                          Total: ₱{Number(order.total_amount).toFixed(2)}
+                      <div className="px-5 pb-5 pt-2 border-t border-border/40 bg-muted/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Items Ordered</h3>
+                        <div className="flex flex-col gap-2">
+                            {order.order_items?.map((item, i) => (
+                                <div key={i} className="flex justify-between items-center py-2 border-b border-border/40 last:border-0 text-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="font-medium text-foreground">{item.quantity}x</div>
+                                        <div className="text-foreground/80">{item.menu_item?.name || 'Unknown Item'}</div>
+                                    </div>
+                                    <div className="font-bold text-foreground">
+                                        ₱{(item.price * item.quantity).toFixed(2)}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <div className="flex items-center gap-4 px-4 py-2 bg-background rounded-lg border border-border">
+                                <span className="text-xs font-bold text-muted-foreground uppercase">Total</span>
+                                <span className="font-extrabold text-foreground">₱{Number(order.total_amount).toFixed(2)}</span>
+                            </div>
                         </div>
                       </div>
                     )}

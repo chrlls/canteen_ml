@@ -169,6 +169,45 @@ Returns the most recent `model_runs` row, or `null` if none exist.
 
 ---
 
+### Orders
+
+### `PATCH /orders/{id}/cancel`
+Cancels an order. Requires `cancellation_reason` in the request body. 
+- Admin/Cashier can cancel any order that is not `Completed` or already `Cancelled`.
+- Customers can only cancel their own orders, and only if the order is still `Pending`.
+
+**Request:**
+```json
+{
+  "cancellation_reason": "Out of stock"
+}
+```
+
+**Response 200 (success):**
+```json
+{
+  "id": 1,
+  "status": "Cancelled",
+  "cancellation_reason": "Out of stock"
+}
+```
+
+**Response 400 (validation or state error):**
+```json
+{ "message": "Cannot cancel a completed or already cancelled order" }
+```
+or (if customer trying to cancel non-pending)
+```json
+{ "message": "Customers can only cancel Pending orders" }
+```
+
+**Response 403 (unauthorized access):**
+```json
+{ "message": "Unauthorized to cancel this order" }
+```
+
+---
+
 ## Known gaps (track in `DECISIONS.md`, not here)
 - `model_runs.training_rows` / `trained_at` / `notes` are never meaningfully populated — Flask `/metrics` needs to return them for this to be fixed.
 - No retry/backoff on the Laravel→Flask HTTP call beyond the 10s timeout already set in `FlaskPredictionService`.

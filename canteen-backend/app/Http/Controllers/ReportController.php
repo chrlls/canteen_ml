@@ -13,7 +13,7 @@ class ReportController extends Controller
     {
         return response()->json([
             'total_sales'         => Order::where('status', 'Completed')->sum('total_amount'),
-            'total_orders'        => Order::count(),
+            'total_orders'        => Order::where('status', '!=', 'Cancelled')->count(),
             'average_order_value' => Order::where('status', 'Completed')->avg('total_amount'),
             'pending_orders'      => Order::where('status', 'Pending')->count(),
         ]);
@@ -54,6 +54,9 @@ class ReportController extends Controller
             ->join('categories', 'menu_items.category_id', '=', 'categories.id')
             ->selectRaw('categories.name, SUM(order_items.price * order_items.quantity) as total')
             ->groupBy('categories.name')
+            ->whereHas('order', function($q) {
+                $q->where('status', 'Completed');
+            })
             ->get();
 
         return response()->json($sales);

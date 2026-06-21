@@ -26,6 +26,7 @@ Reflects the live schema as of 2026-06-20, after the `demand_predictions` cleanu
 | price | decimal(8,2) | This is `unit_price` in the ML feature set |
 | stock | integer, default 0 | |
 | is_available | boolean, default true | |
+| requires_preparation | boolean, default true | Determines if an order containing this item needs to go through the 'Preparing' stage. |
 | image | string, nullable | |
 | timestamps | | |
 
@@ -43,6 +44,7 @@ Reflects the live schema as of 2026-06-20, after the `demand_predictions` cleanu
 | order_number | string, unique | Seeder pattern: `ORD-00001`...`ORD-00200`. Anything outside this pattern is manual/test data, not seeded — used as the signal to identify and remove test orders (see `DECISIONS.md`). |
 | total_amount | decimal(10,2) | |
 | status | enum: `Pending`, `Preparing`, `Ready`, `Completed`, `Cancelled` — default `Pending` | MySQL enum matching is case-insensitive on write, canonical-case on read — seeder inserts lowercase, DB always returns the capitalized defined values. |
+| cancellation_reason | string, nullable | Added 2026-06-21. Allowed values (enforced in code): `Out of stock`, `Customer changed mind`, `Order error`, `Payment issue`. |
 | order_type | enum: `Take Away`, `Dine In` — default `Take Away` | Added after initial schema (found via doc-alignment audit, 2026-06-20). Validated in `OrderController::store`. Not currently used anywhere in the prediction pipeline — `PredictionController` only counts `quantity`/`status`, not `order_type`. |
 | timestamps | | |
 

@@ -46,11 +46,14 @@ class OrderController extends Controller
 
         $order = Order::create([
             'user_id'      => $request->user()->id,
-            'order_number' => 'ORD-' . strtoupper(uniqid()),
+            'order_number' => 'TEMP',
             'total_amount' => $total,
             'status'       => 'Pending', // ✅ Capitalized
             'order_type'   => $request->order_type,
         ]);
+
+        $order->order_number = str_pad($order->id, 3, '0', STR_PAD_LEFT);
+        $order->save();
 
         foreach ($request->items as $item) {
             $menuItem = MenuItem::findOrFail($item['menu_item_id']);
@@ -76,11 +79,46 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:Pending,Preparing,Ready,Completed,Cancelled', // ✅ Capitalized
+            'status' => 'required|in:Pending,Preparing,Ready,Completed', // Cancelled goes through cancel()
         ]);
 
         $order = Order::findOrFail($id);
+
+        if ($order->status === 'Completed' || $order->status === 'Cancelled') {
+            return response()->json(['message' => 'Cannot update a completed or cancelled order'], 400);
+        }
+
         $order->update(['status' => $request->status]);
+        return response()->json($order);
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $request->validate([
+            'cancellation_reason' => 'required|in:Out of stock,Customer changed mind,Order error,Payment issue',
+        ]);
+
+        $order = Order::findOrFail($id);
+
+        $user = $request->user();
+        if ($user->role === 'customer') {
+            if ($order->user_id !== $user->id) {
+                return response()->json(['message' => 'Unauthorized to cancel this order'], 403);
+            }
+            if ($order->status !== 'Pending') {
+                return response()->json(['message' => 'Customers can only cancel Pending orders'], 400);
+            }
+        }
+
+        if ($order->status === 'Completed' || $order->status === 'Cancelled') {
+            return response()->json(['message' => 'Cannot cancel a completed or already cancelled order'], 400);
+        }
+
+        $order->update([
+            'status' => 'Cancelled',
+            'cancellation_reason' => $request->cancellation_reason
+        ]);
+
         return response()->json($order);
     }
 }

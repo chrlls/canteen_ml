@@ -5,7 +5,12 @@ use Illuminate\Database\Eloquent\Model;
 class MenuItem extends Model {
     protected $fillable = [
         'category_id', 'name', 'description',
-        'price', 'stock', 'is_available', 'image'
+        'price', 'stock', 'is_available', 'image', 'requires_preparation'
+    ];
+
+    protected $casts = [
+        'requires_preparation' => 'boolean',
+        'is_available' => 'boolean',
     ];
 
     public function category() {

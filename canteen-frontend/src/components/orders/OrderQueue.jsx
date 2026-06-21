@@ -5,6 +5,7 @@ import ORDER_STATUS from '../../constants/orderStatus';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Button } from '../ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../ui/pagination';
 
@@ -15,8 +16,8 @@ const nextStatus = {
 };
 
 const nextLabel = {
-    Pending:   'Start Preparing',
-    Preparing: 'Mark Ready',
+    Pending:   'Cook',
+    Preparing: 'Finish',
     Ready:     'Complete',
 };
 
@@ -28,6 +29,10 @@ export default function OrderQueue() {
     const [updating, setUpdating] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
+    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [cancelOrderId, setCancelOrderId] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     const [search, setSearch] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: 'status_priority', direction: 'asc' });
@@ -61,6 +66,22 @@ export default function OrderQueue() {
             await fetchOrders();
         } catch {
             alert('Failed to update status.');
+        } finally {
+            setUpdating(null);
+        }
+    };
+
+    const handleCancelOrder = async () => {
+        if (!cancelReason) return;
+        setUpdating(cancelOrderId);
+        try {
+            await orderService.cancelOrder(cancelOrderId, cancelReason);
+            setCancelModalOpen(false);
+            setCancelReason('');
+            setCancelOrderId(null);
+            await fetchOrders();
+        } catch {
+            alert('Failed to cancel order.');
         } finally {
             setUpdating(null);
         }
@@ -133,10 +154,7 @@ export default function OrderQueue() {
                             className="h-9 w-full sm:w-[250px] bg-background border-border/50 text-sm shadow-sm"
                         />
                     </div>
-                    <div className="flex items-center gap-2 bg-muted/50 border border-border/50 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground shadow-sm whitespace-nowrap">
-                        <span className={`w-2 h-2 rounded-full transition-colors ${pulse ? 'bg-destructive' : 'bg-success shadow-[0_0_8px_rgba(39,174,96,0.6)] animate-pulse'}`} />
-                        Live · 5s
-                    </div>
+
                 </div>
             </CardHeader>
 
@@ -213,18 +231,50 @@ export default function OrderQueue() {
                                                 </span>
                                             </TableCell>
                                             <TableCell>
-                                                {nextStatus[order.status] ? (
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-8 text-xs font-bold shadow-sm"
-                                                        disabled={updating === order.id}
-                                                        onClick={() => updateStatus(order.id, nextStatus[order.status])}
-                                                    >
-                                                        {updating === order.id ? 'Updating...' : nextLabel[order.status]}
-                                                    </Button>
-                                                ) : (
-                                                    <span className="text-xs font-bold text-muted-foreground px-2">—</span>
-                                                )}
+                                                <div className="flex gap-2 items-center justify-end">
+                                                    {nextStatus[order.status] ? (
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-8 text-xs font-bold shadow-sm"
+                                                                disabled={updating === order.id}
+                                                                onClick={() => {
+                                                                    let target = nextStatus[order.status];
+                                                                    if (order.status === 'Pending') {
+                                                                        const requiresPrep = order.order_items?.some(i => i.menu_item?.requires_preparation !== false);
+                                                                        if (!requiresPrep) target = 'Ready';
+                                                                    }
+                                                                    updateStatus(order.id, target);
+                                                                }}
+                                                            >
+                                                                {updating === order.id ? 'Updating...' : (() => {
+                                                                    if (order.status === 'Pending') {
+                                                                        const requiresPrep = order.order_items?.some(i => i.menu_item?.requires_preparation !== false);
+                                                                        return requiresPrep ? 'Cook' : 'Finish';
+                                                                    }
+                                                                    return nextLabel[order.status];
+                                                                })()}
+                                                            </Button>
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                className="h-8 text-xs font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20"
+                                                                disabled={updating === order.id}
+                                                                onClick={() => {
+                                                                    setCancelOrderId(order.id);
+                                                                    setCancelReason('');
+                                                                    setCancelModalOpen(true);
+                                                                }}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </>
+                                                    ) : order.status === 'Cancelled' ? (
+                                                        <span className="text-xs font-bold text-destructive px-2">CANCELLED</span>
+                                                    ) : (
+                                                        <span className="text-xs font-bold text-muted-foreground px-2">—</span>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -268,6 +318,40 @@ export default function OrderQueue() {
                     </Pagination>
                 </div>
             )}
+
+            <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Cancel Order</DialogTitle>
+                        <DialogDescription>
+                            Please select a reason for cancelling this order.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <select 
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                        >
+                            <option value="" disabled>Select a reason...</option>
+                            <option value="Out of stock">Out of stock</option>
+                            <option value="Customer changed mind">Customer changed mind</option>
+                            <option value="Order error">Order error</option>
+                            <option value="Payment issue">Payment issue</option>
+                        </select>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCancelModalOpen(false)}>Back</Button>
+                        <Button 
+                            variant="destructive" 
+                            disabled={!cancelReason || updating === cancelOrderId}
+                            onClick={handleCancelOrder}
+                        >
+                            {updating === cancelOrderId ? 'Cancelling...' : 'Confirm Cancel'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

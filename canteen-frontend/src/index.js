@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -11,7 +12,9 @@ root.render(
   <ErrorBoundary>
     <AuthProvider>
       <CartProvider>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </CartProvider>
     </AuthProvider>
   </ErrorBoundary>

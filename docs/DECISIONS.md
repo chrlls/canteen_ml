@@ -80,3 +80,14 @@ A full route audit found 16 of 18 sensitive routes (menu/category mutation, repo
 - Synthetic training data, not real transaction history (see Architecture section above).
 - Combos category is out of scope for demand prediction — by design, documented here, not a bug.
 - `model_runs` metadata (`training_rows`, `trained_at`, `notes`) is not populated by the current `metrics.json`, since it only contains accuracy/precision/recall/F1. Low priority — only matters if the historical model-run log needs to be more detailed for the defense.
+
+## Order Cancellation Flow (2026-06-21)
+
+**Added cancellation reason and protected ML training data.**
+We implemented a proper cancellation flow that requires a `cancellation_reason` and sets the order status to `Cancelled`. To protect the ML model (which predicts demand based on fulfilled items), we updated the backend `ReportController` to exclude cancelled orders from the metrics. The Flask ML training script inherently uses the synthetic CSV right now, which is safe, but we've documented that any future retraining on live data MUST filter by `status = Completed`.
+
+**Customers can cancel their own pending orders.**
+Allowed customers to use the cancel route, but added safeguards in `OrderController::cancel`: they can only cancel orders that belong to them (`user_id` matches), and the order must be strictly in the `Pending` state. If the kitchen has moved the order to `Preparing` (Cook), the customer can no longer cancel it, minimizing food waste. For customers, the cancel reason defaults automatically to "Customer changed mind" on the frontend to streamline their experience.
+
+**Non-cooked items auto-skip the Cook stage.**
+Added a `requires_preparation` boolean flag to the `menu_items` table. For orders containing *only* items that do not require preparation (like bottled water or pre-made desserts), the frontend dynamically updates the `Pending` stage to transition directly to `Ready` (skipping `Preparing`), and labels the action "Finish" instead of "Cook". This matches the real-world workflow where staff just hand over the item.

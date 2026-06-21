@@ -63,16 +63,16 @@ export default function MenuList() {
     const cartItemCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
     return (
-        <Layout>
-            <div className="flex flex-col h-full">
-
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <Layout hideNavbar={true}>
+            <div className="flex flex-col gap-6 w-full">
+                
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 mb-2">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            {user?.role === 'customer' ? <><span>🍔</span> Browse Menu</> : <><span>🍽️</span> Menu Management</>}
+                        <h1 className="text-3xl font-semibold tracking-tight text-[#1e293b]">
+                            {user?.role === 'customer' ? 'Browse Menu' : 'Menu Management'}
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">{filtered.length} items available</p>
+                        <p className="text-[15px] font-medium text-slate-500/90 mt-1.5 tracking-wide">{filtered.length} items available</p>
                     </div>
                     <div className="flex gap-3">
                         {user?.role === 'customer' && (

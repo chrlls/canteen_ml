@@ -52,7 +52,7 @@ function App() {
 
                 {/* All Roles */}
                 <Route path="/menu" element={
-                    <ProtectedRoute roles={['admin', 'cashier', 'customer']}>
+                    <ProtectedRoute roles={['admin', 'cashier']}>
                         <MenuList />
                     </ProtectedRoute>
                 } />

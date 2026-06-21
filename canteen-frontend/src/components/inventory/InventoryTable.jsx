@@ -158,15 +158,15 @@ export default function InventoryTable() {
     };
 
     return (
-        <Layout>
+        <Layout hideNavbar={true}>
             <div className="flex flex-col gap-6 w-full">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 mb-2">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            📦 Inventory Management
+                        <h1 className="text-3xl font-semibold tracking-tight text-[#1e293b]">
+                            Inventory Management
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">Manage stock levels and view adjustment history</p>
+                        <p className="text-[15px] font-medium text-slate-500/90 mt-1.5 tracking-wide">Manage stock levels and view adjustment history</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {lowCount > 0 && (

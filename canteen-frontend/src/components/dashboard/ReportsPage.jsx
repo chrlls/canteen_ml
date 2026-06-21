@@ -13,6 +13,7 @@ import { DollarSign, ShoppingCart, CreditCard, Zap, TrendingUp, RefreshCw, Clock
 export default function ReportsPage() {
     const [bestSelling, setBestSelling] = useState([]);
     const [dailyData, setDailyData] = useState([]);
+    const [summary, setSummary] = useState({});
     const [metrics, setMetrics] = useState(null);
     const [predictions, setPredictions] = useState([]);
     const [isPredicting, setIsPredicting] = useState(false);
@@ -25,6 +26,7 @@ export default function ReportsPage() {
     useEffect(() => {
         api.get('/reports/best-selling').then(res => setBestSelling(res.data));
         api.get('/reports/daily').then(res => setDailyData(res.data)).catch(console.error);
+        api.get('/reports/summary').then(res => setSummary(res.data)).catch(console.error);
         fetchPredictionsData();
     }, []);
 
@@ -105,9 +107,9 @@ export default function ReportsPage() {
     };
 
     // KPI Calculations
-    const totalRevenue = dailyData.reduce((sum, d) => sum + Number(d.total_revenue || 0), 0);
-    const totalOrders = dailyData.reduce((sum, d) => sum + Number(d.total_orders || 0), 0);
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalRevenue = summary.total_sales || 0;
+    const totalOrders = summary.total_orders || 0;
+    const avgOrderValue = summary.average_order_value || 0;
     const itemsTrendingHigh = predictions.filter(p => p.predicted_label === 'High Demand').length;
     const totalForecasted = predictions.length;
 
@@ -144,14 +146,14 @@ export default function ReportsPage() {
     };
 
     return (
-        <Layout>
+        <Layout hideNavbar={true}>
             <div className="flex flex-col gap-6 w-full pb-10">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 mb-2">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            Sales Reports & Analytics
+                        <h1 className="text-3xl font-semibold tracking-tight text-[#1e293b] flex items-center gap-2">
+                            Analytics
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">View revenue, popular items, and AI demand forecasts</p>
+                        <p className="text-[15px] font-medium text-slate-500/90 mt-1.5 tracking-wide">View revenue, popular items, and AI demand forecasts.</p>
                     </div>
                 </div>
 
@@ -166,8 +168,8 @@ export default function ReportsPage() {
                             </div>
                         </div>
                         <div className="mt-2">
-                            <div className="text-[26px] font-extrabold text-[#1e293b] tracking-tight mb-2">₱{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600">
+                            <div className="text-[26px] font-semibold text-[#1e293b] tracking-tight mb-2">₱{(Number(totalRevenue) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
                                 <TrendingUp size={12} strokeWidth={3} />
                                 <span>+12.4% vs last week</span>
                             </div>
@@ -183,8 +185,8 @@ export default function ReportsPage() {
                             </div>
                         </div>
                         <div className="mt-2">
-                            <div className="text-[26px] font-extrabold text-[#1e293b] tracking-tight mb-2">{totalOrders.toLocaleString()}</div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600">
+                            <div className="text-[26px] font-semibold text-[#1e293b] tracking-tight mb-2">{(Number(totalOrders) || 0).toLocaleString()}</div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
                                 <TrendingUp size={12} strokeWidth={3} />
                                 <span>+6.1% vs last week</span>
                             </div>
@@ -200,8 +202,8 @@ export default function ReportsPage() {
                             </div>
                         </div>
                         <div className="mt-2">
-                            <div className="text-[26px] font-extrabold text-[#1e293b] tracking-tight mb-2">₱{avgOrderValue.toFixed(0)}</div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
+                            <div className="text-[26px] font-semibold text-[#1e293b] tracking-tight mb-2">₱{(Number(avgOrderValue) || 0).toFixed(0)}</div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
                                 <span>about the same</span>
                             </div>
                         </div>
@@ -216,8 +218,8 @@ export default function ReportsPage() {
                             </div>
                         </div>
                         <div className="mt-2">
-                            <div className="text-[26px] font-extrabold text-[#1e293b] tracking-tight mb-2">{itemsTrendingHigh}</div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#e15b4d]">
+                            <div className="text-[26px] font-semibold text-[#1e293b] tracking-tight mb-2">{itemsTrendingHigh}</div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#e15b4d]">
                                 <span>out of {totalForecasted} forecasted items</span>
                             </div>
                         </div>

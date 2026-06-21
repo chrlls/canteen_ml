@@ -10,13 +10,18 @@ export default function OrderReceipt({ order, onClose }) {
   const items = order.order_items || order.items || [];
   const total = order.total_amount || items.reduce((s, i) => s + i.price * i.quantity, 0);
 
+  const requiresPrep = items.some(item => {
+      const menuItem = item.menu_item || item;
+      return menuItem.requires_preparation !== 0 && menuItem.requires_preparation !== false;
+  });
+
   const statusConfig = {
       Pending: {
           title: 'Order Placed',
-          desc: 'has been placed and is waiting to be cooked.',
+          desc: requiresPrep ? 'has been placed and is waiting to be cooked.' : 'has been placed and is waiting to be served.',
           icon: '⏳',
           colorClass: 'bg-amber-500/15 text-amber-500 ring-amber-500/5',
-          pill1: 'WAITING TO COOK',
+          pill1: requiresPrep ? 'WAITING TO COOK' : 'WAITING TO SERVE',
           pill2: 'IN QUEUE'
       },
       Preparing: {

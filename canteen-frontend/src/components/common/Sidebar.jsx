@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { cn } from '../../lib/utils';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Menu, X } from 'lucide-react';
 
 export default function Sidebar() {
     const { user, logout } = useAuth();
@@ -34,8 +34,7 @@ export default function Sidebar() {
     ];
 
     const customerLinks = [
-        { to: '/menu', label: 'Browse Menu' },
-        { to: '/orders', label: 'Place Order' },
+        { to: '/orders', label: 'Order Food' },
         { to: '/history', label: 'Purchase History' },
     ];
 
@@ -116,10 +115,10 @@ export default function Sidebar() {
         <>
             {/* Mobile Toggle Button */}
             <button
-                className="lg:hidden fixed top-3 left-4 z-50 bg-slate-900 text-white p-2 rounded-md shadow-md border border-slate-700"
+                className="lg:hidden fixed top-3 left-3 z-50 p-2 text-foreground flex items-center justify-center"
                 onClick={() => setMobileOpen(!mobileOpen)}
             >
-                {mobileOpen ? <span className="font-bold text-xs uppercase px-1">Close</span> : <span className="font-bold text-xs uppercase px-1">Menu</span>}
+                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
             {/* Mobile Overlay */}

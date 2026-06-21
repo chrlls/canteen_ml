@@ -34,7 +34,7 @@ export default function Login() {
             const user = await login(email, password);
             if (user.role === 'admin')        navigate('/dashboard');
             else if (user.role === 'cashier') navigate('/orders');
-            else                              navigate('/menu');
+            else                              navigate('/orders');
         } catch {
             setError('Invalid email or password. Please try again.');
         } finally {
